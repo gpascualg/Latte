@@ -1,0 +1,266 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 86d5aba..28eb198 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -45,8 +45,8 @@ endif()
+ 
+ message(WARNING "CMake support is experimental. This will not produce the same Makefiles that OpenBLAS ships with. Only x86 support is currently available.")
+ 
+-include("${CMAKE_SOURCE_DIR}/cmake/utils.cmake")
+-include("${CMAKE_SOURCE_DIR}/cmake/system.cmake")
++include("${PROJECT_SOURCE_DIR}/cmake/utils.cmake")
++include("${PROJECT_SOURCE_DIR}/cmake/system.cmake")
+ 
+ set(BLASDIRS interface driver/level2 driver/level3 driver/others)
+ 
+@@ -123,9 +123,9 @@ endforeach ()
+ # Can't just use lapack-netlib's CMake files, since they are set up to search for BLAS, build and install a binary. We just want to build a couple of lib files out of lapack and lapacke.
+ # Not using add_subdirectory here because lapack-netlib already has its own CMakeLists.txt. Instead include a cmake script with the sources we want.
+ if (NOT NOFORTRAN AND NOT NO_LAPACK)
+-  include("${CMAKE_SOURCE_DIR}/cmake/lapack.cmake")
++  include("${PROJECT_SOURCE_DIR}/cmake/lapack.cmake")
+ if (NOT NO_LAPACKE)
+-  include("${CMAKE_SOURCE_DIR}/cmake/lapacke.cmake")
++  include("${PROJECT_SOURCE_DIR}/cmake/lapacke.cmake")
+ endif ()
+ endif ()
+ 
+@@ -137,7 +137,7 @@ endif()
+ # add objects to the openblas lib
+ add_library(${OpenBLAS_LIBNAME} SHARED ${LA_SOURCES} ${LAPACKE_SOURCES} ${TARGET_OBJS} ${OpenBLAS_DEF_FILE})
+ 
+-include("${CMAKE_SOURCE_DIR}/cmake/export.cmake")
++include("${PROJECT_SOURCE_DIR}/cmake/export.cmake")
+ 
+ 
+ if(NOT MSVC)
+@@ -159,7 +159,7 @@ add_subdirectory(ctest)
+ endif()
+ endif()
+ 
+-set_target_properties(${OpenBLAS_LIBNAME} PROPERTIES 
++set_target_properties(${OpenBLAS_LIBNAME} PROPERTIES
+   VERSION ${OpenBLAS_MAJOR_VERSION}.${OpenBLAS_MINOR_VERSION}
+   SOVERSION ${OpenBLAS_MAJOR_VERSION}
+ )
+@@ -187,4 +187,3 @@ set_target_properties(${OpenBLAS_LIBNAME} PROPERTIES
+ #	@echo USE_THREAD=$(USE_THREAD) >>  Makefile.conf_last
+ #endif
+ #	@touch lib.grd
+-
+diff --git a/cmake/export.cmake b/cmake/export.cmake
+index adf5910..629f8fb 100644
+--- a/cmake/export.cmake
++++ b/cmake/export.cmake
+@@ -53,7 +53,7 @@ endif()
+ add_custom_command(
+   TARGET ${OpenBLAS_LIBNAME} PRE_LINK 
+   COMMAND perl 
+-  ARGS "${CMAKE_SOURCE_DIR}/exports/gensymbol" "win2k" "${ARCH_IN}" "dummy" "${EXPRECISION_IN}" "${NO_CBLAS_IN}" "${NO_LAPACK_IN}" "${NO_LAPACKE_IN}" "${NEED2UNDERSCORES_IN}" "${ONLY_CBLAS_IN}" "${SYMBOLPREFIX}" "${SYMBOLSUFFIX}" > "${PROJECT_BINARY_DIR}/openblas.def"
++  ARGS "${PROJECT_SOURCE_DIR}/exports/gensymbol" "win2k" "${ARCH_IN}" "dummy" "${EXPRECISION_IN}" "${NO_CBLAS_IN}" "${NO_LAPACK_IN}" "${NO_LAPACKE_IN}" "${NEED2UNDERSCORES_IN}" "${ONLY_CBLAS_IN}" "${SYMBOLPREFIX}" "${SYMBOLSUFFIX}" > "${PROJECT_BINARY_DIR}/openblas.def"
+   COMMENT "Create openblas.def file"
+   VERBATIM)
+ 
+diff --git a/cmake/prebuild.cmake b/cmake/prebuild.cmake
+index c3fa486..471ce90 100644
+--- a/cmake/prebuild.cmake
++++ b/cmake/prebuild.cmake
+@@ -50,20 +50,20 @@ else()
+   set(TARGET_CONF "config.h")
+ endif ()
+ 
+-include("${CMAKE_SOURCE_DIR}/cmake/c_check.cmake")
++include("${PROJECT_SOURCE_DIR}/cmake/c_check.cmake")
+ 
+ if (NOT NOFORTRAN)
+-  include("${CMAKE_SOURCE_DIR}/cmake/f_check.cmake")
++  include("${PROJECT_SOURCE_DIR}/cmake/f_check.cmake")
+ endif ()
+ 
+ # compile getarch
+ set(GETARCH_SRC
+-  ${CMAKE_SOURCE_DIR}/getarch.c
++  ${PROJECT_SOURCE_DIR}/getarch.c
+   ${CPUIDEMO}
+ )
+ 
+ if (NOT MSVC)
+-  list(APPEND GETARCH_SRC ${CMAKE_SOURCE_DIR}/cpuid.S)
++  list(APPEND GETARCH_SRC ${PROJECT_SOURCE_DIR}/cpuid.S)
+ endif ()
+ 
+ if (MSVC)
+@@ -76,7 +76,7 @@ set(GETARCH_BIN "getarch${CMAKE_EXECUTABLE_SUFFIX}")
+ file(MAKE_DIRECTORY ${GETARCH_DIR})
+ try_compile(GETARCH_RESULT ${GETARCH_DIR}
+   SOURCES ${GETARCH_SRC}
+-  COMPILE_DEFINITIONS ${EXFLAGS} ${GETARCH_FLAGS} -I${CMAKE_SOURCE_DIR}
++  COMPILE_DEFINITIONS ${EXFLAGS} ${GETARCH_FLAGS} -I${PROJECT_SOURCE_DIR}
+   OUTPUT_VARIABLE GETARCH_LOG
+   COPY_FILE ${PROJECT_BINARY_DIR}/${GETARCH_BIN}
+ )
+@@ -97,8 +97,8 @@ set(GETARCH2_DIR "${PROJECT_BINARY_DIR}/getarch2_build")
+ set(GETARCH2_BIN "getarch_2nd${CMAKE_EXECUTABLE_SUFFIX}")
+ file(MAKE_DIRECTORY ${GETARCH2_DIR})
+ try_compile(GETARCH2_RESULT ${GETARCH2_DIR}
+-  SOURCES ${CMAKE_SOURCE_DIR}/getarch_2nd.c
+-  COMPILE_DEFINITIONS ${EXFLAGS} ${GETARCH_FLAGS} ${GETARCH2_FLAGS} -I${CMAKE_SOURCE_DIR}
++  SOURCES ${PROJECT_SOURCE_DIR}/getarch_2nd.c
++  COMPILE_DEFINITIONS ${EXFLAGS} ${GETARCH_FLAGS} ${GETARCH2_FLAGS} -I${PROJECT_SOURCE_DIR}
+   OUTPUT_VARIABLE GETARCH2_LOG
+   COPY_FILE ${PROJECT_BINARY_DIR}/${GETARCH2_BIN}
+ )
+diff --git a/cmake/system.cmake b/cmake/system.cmake
+index 134e9c1..aa046a5 100644
+--- a/cmake/system.cmake
++++ b/cmake/system.cmake
+@@ -3,7 +3,7 @@
+ ## Description: Ported from OpenBLAS/Makefile.system
+ ##
+ 
+-set(NETLIB_LAPACK_DIR "${CMAKE_SOURCE_DIR}/lapack-netlib")
++set(NETLIB_LAPACK_DIR "${PROJECT_SOURCE_DIR}/lapack-netlib")
+ 
+ # TODO: Makefile.system detects Darwin (mac) and switches to clang here -hpa
+ # http://stackoverflow.com/questions/714100/os-detecting-makefile
+@@ -78,7 +78,7 @@ else ()
+   set(ONLY_CBLAS 0)
+ endif ()
+ 
+-include("${CMAKE_SOURCE_DIR}/cmake/prebuild.cmake")
++include("${PROJECT_SOURCE_DIR}/cmake/prebuild.cmake")
+ 
+ if (NOT DEFINED NUM_THREADS)
+   set(NUM_THREADS ${NUM_CORES})
+@@ -124,17 +124,17 @@ set(OBJCOPY "${CROSS_SUFFIX}objcopy")
+ set(OBJCONV "${CROSS_SUFFIX}objconv")
+ 
+ # OS dependent settings
+-include("${CMAKE_SOURCE_DIR}/cmake/os.cmake")
++include("${PROJECT_SOURCE_DIR}/cmake/os.cmake")
+ 
+ # Architecture dependent settings
+-include("${CMAKE_SOURCE_DIR}/cmake/arch.cmake")
++include("${PROJECT_SOURCE_DIR}/cmake/arch.cmake")
+ 
+ # C Compiler dependent settings
+-include("${CMAKE_SOURCE_DIR}/cmake/cc.cmake")
++include("${PROJECT_SOURCE_DIR}/cmake/cc.cmake")
+ 
+ if (NOT NOFORTRAN)
+   # Fortran Compiler dependent settings
+-  include("${CMAKE_SOURCE_DIR}/cmake/fc.cmake")
++  include("${PROJECT_SOURCE_DIR}/cmake/fc.cmake")
+ endif ()
+ 
+ if (BINARY64)
+@@ -247,10 +247,10 @@ if (NOT DEFINED SYMBOLSUFFIX)
+   set(SYMBOLSUFFIX "")
+ endif ()
+ 
+-set(KERNELDIR	"${CMAKE_SOURCE_DIR}/kernel/${ARCH}")
++set(KERNELDIR	"${PROJECT_SOURCE_DIR}/kernel/${ARCH}")
+ 
+ # TODO: nead to convert these Makefiles
+-# include ${CMAKE_SOURCE_DIR}/cmake/${ARCH}.cmake
++# include ${PROJECT_SOURCE_DIR}/cmake/${ARCH}.cmake
+ 
+ if (${CORE} STREQUAL "PPC440")
+   set(CCOMMON_OPT "${CCOMMON_OPT} -DALLOC_QALLOC")
+@@ -410,8 +410,8 @@ set(LIBDEFNAME "${LIBNAME}.${LIBSUFFIX}.def")
+ set(LIBEXPNAME "${LIBNAME}.${LIBSUFFIX}.exp")
+ set(LIBZIPNAME "${LIBNAME}.${LIBSUFFIX}.zip")
+ 
+-set(LIBS "${CMAKE_SOURCE_DIR}/${LIBNAME}")
+-set(LIBS_P "${CMAKE_SOURCE_DIR}/${LIBNAME_P}")
++set(LIBS "${PROJECT_SOURCE_DIR}/${LIBNAME}")
++set(LIBS_P "${PROJECT_SOURCE_DIR}/${LIBNAME_P}")
+ 
+ 
+ set(LIB_COMPONENTS BLAS)
+diff --git a/ctest/CMakeLists.txt b/ctest/CMakeLists.txt
+index dbe785b..addcffe 100644
+--- a/ctest/CMakeLists.txt
++++ b/ctest/CMakeLists.txt
+@@ -1,4 +1,4 @@
+-include_directories(${CMAKE_SOURCE_DIR})
++include_directories(${PROJECT_SOURCE_DIR})
+ 
+ enable_language(Fortran)
+ 
+diff --git a/driver/level2/CMakeLists.txt b/driver/level2/CMakeLists.txt
+index 6967674..f444469 100644
+--- a/driver/level2/CMakeLists.txt
++++ b/driver/level2/CMakeLists.txt
+@@ -1,5 +1,5 @@
+ 
+-include_directories(${CMAKE_SOURCE_DIR})
++include_directories(${PROJECT_SOURCE_DIR})
+ 
+ # sources that need to be compiled twice, once with no flags and once with LOWER
+ set(UL_SOURCES
+diff --git a/driver/level3/CMakeLists.txt b/driver/level3/CMakeLists.txt
+index 84d419b..c7b1087 100644
+--- a/driver/level3/CMakeLists.txt
++++ b/driver/level3/CMakeLists.txt
+@@ -1,4 +1,4 @@
+-include_directories(${CMAKE_SOURCE_DIR})
++include_directories(${PROJECT_SOURCE_DIR})
+ 
+ # N.B. In the original makefile there was a BLOCKS define used in the compilation of these files but I don't see any evidence of it being set anywhere. -hpa
+ 
+diff --git a/driver/others/CMakeLists.txt b/driver/others/CMakeLists.txt
+index b2af55e..c6cdc09 100644
+--- a/driver/others/CMakeLists.txt
++++ b/driver/others/CMakeLists.txt
+@@ -1,4 +1,4 @@
+-include_directories(${CMAKE_SOURCE_DIR})
++include_directories(${PROJECT_SOURCE_DIR})
+ 
+ if (${CORE} STREQUAL "PPC440")
+   set(MEMORY memory_qalloc.c)
+diff --git a/interface/CMakeLists.txt b/interface/CMakeLists.txt
+index 9ff924e..1722dc6 100644
+--- a/interface/CMakeLists.txt
++++ b/interface/CMakeLists.txt
+@@ -1,5 +1,5 @@
+ 
+-include_directories(${CMAKE_SOURCE_DIR})
++include_directories(${PROJECT_SOURCE_DIR})
+ 
+ 
+ set(BLAS1_SOURCES
+diff --git a/kernel/CMakeLists.txt b/kernel/CMakeLists.txt
+index 8a3b021..772f2ed 100644
+--- a/kernel/CMakeLists.txt
++++ b/kernel/CMakeLists.txt
+@@ -1,6 +1,6 @@
+ 
+-include_directories(${CMAKE_SOURCE_DIR})
+-include("${CMAKE_SOURCE_DIR}/cmake/kernel.cmake")
++include_directories(${PROJECT_SOURCE_DIR})
++include("${PROJECT_SOURCE_DIR}/cmake/kernel.cmake")
+ 
+ # Makefile
+ 
+diff --git a/lapack/CMakeLists.txt b/lapack/CMakeLists.txt
+index de42e1a..afd583c 100644
+--- a/lapack/CMakeLists.txt
++++ b/lapack/CMakeLists.txt
+@@ -1,5 +1,5 @@
+ 
+-include_directories(${CMAKE_SOURCE_DIR})
++include_directories(${PROJECT_SOURCE_DIR})
+ 
+ 
+ set(LAPACK_SOURCES
+diff --git a/test/CMakeLists.txt b/test/CMakeLists.txt
+index cd44971..5e9baf9 100644
+--- a/test/CMakeLists.txt
++++ b/test/CMakeLists.txt
+@@ -1,4 +1,4 @@
+-include_directories(${CMAKE_SOURCE_DIR})
++include_directories(${PROJECT_SOURCE_DIR})
+ 
+ enable_language(Fortran)
+ 

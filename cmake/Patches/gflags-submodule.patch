@@ -1,0 +1,27 @@
+From 70aac393da0c5eddf91f6febf5de73cd28106143 Mon Sep 17 00:00:00 2001
+From: madwyn <madwyn@gmail.com>
+Date: Tue, 20 Oct 2015 14:25:18 +0100
+Subject: [PATCH] use gflags as submodule
+
+From https://github.com/gflags/gflags/issues/117
+---
+ CMakeLists.txt | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index c32bce3..8207837 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -335,9 +335,10 @@ foreach (TYPE IN ITEMS STATIC SHARED)
+           target_link_libraries (gflags${opts}-${type} shlwapi.lib)
+         endif ()
+         if (NOT TARGET gflags${opts})
+-          add_custom_target (gflags${opts})
++          add_library (gflags${opts} ALIAS gflags${opts}-${type})
++        else ()
++          add_dependencies (gflags${opts} gflags${opts}-${type})
+         endif ()
+-        add_dependencies (gflags${opts} gflags${opts}-${type})
+         list (APPEND TARGETS gflags${opts}-${type})
+       endif ()
+     endforeach ()

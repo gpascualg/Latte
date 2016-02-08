@@ -1,0 +1,9 @@
+[submodule "dep/gflags"]
+	path = dep/gflags
+	url = https://github.com/gflags/gflags.git
+[submodule "dep/OpenBLAS"]
+	path = dep/OpenBLAS
+	url = https://github.com/xianyi/OpenBLAS.git
+[submodule "dep/openmp"]
+	path = dep/openmp
+	url = http://llvm.org/git/openmp
