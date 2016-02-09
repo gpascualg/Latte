@@ -3,6 +3,7 @@
 #include <vector>
 
 #include "matrix.hpp"
+#include "matrix_factory.hpp"
 
 DEFINE_bool(testing, false, "Set to true to test");
 

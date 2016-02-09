@@ -29,125 +29,6 @@ inline DType* transpose(DType *A, DType *B, int m, int n) {
 	return B;
 }
 
-template <typename DType>
-class Matrix;
-
-template <typename DType>
-inline bool operator>(const Matrix<DType>& lhs, const Matrix<DType>& rhs) { return lhs.shape().prod() < rhs.shape().prod() }
-
-template <typename DType = float>
-class MatrixFactory
-{
-public:
-	static MatrixFactory<DType>* get()
-	{
-		if (_instance == NULL)
-		{
-			_instance = new MatrixFactory<DType>();
-		}
-
-		return _instance;
-	}
-
-	Matrix<DType>* pop(Shape shape)
-	{
-		Matrix<DType>* matrix = nullptr;
-
-		if (!_pool.empty())
-		{
-			matrix = _pool.top();
-			if (matrix->shape().prod() >= shape.prod())
-			{
-				_pool.pop();
-
-				matrix->reshape(shape);
-			}
-		}
-		else
-		{
-			matrix = new Matrix<DType>(shape);
-		}
-
-		_pending.push(matrix);
-		return matrix;
-	}
-
-	Matrix<DType>* pop(Shape shape, DType value)
-	{
-		Matrix<DType>* matrix = nullptr;
-
-		if (!_pool.empty())
-		{
-			matrix = _pool.top();
-			if (matrix->shape().prod() >= shape.prod())
-			{
-				_pool.pop();
-
-				matrix->reshape(shape);
-				for (int i = 0; i < shape.prod(); ++i)
-				{
-					(*matrix)[i] = value;
-				}
-			}
-		}
-		else
-		{
-			matrix = new Matrix<DType>(shape);
-		}
-
-		_pending.push(matrix);
-		return matrix;
-	}
-
-	Matrix<DType>* pop(Shape shape, DType* other)
-	{
-		Matrix<DType>* matrix = nullptr;
-
-		if (!_pool.empty())
-		{
-			matrix = _pool.top();
-			if (matrix->shape().prod() >= shape.prod())
-			{
-				_pool.pop();
-
-				matrix->reshape(shape);
-				for (int i = 0; i < shape.prod(); ++i)
-				{
-					(*matrix)[i] = other[i];
-				}
-			}
-		}
-		else
-		{
-			matrix = new Matrix<DType>(shape);
-		}
-
-		_pending.push(matrix);
-		return matrix;
-	}
-
-	void update()
-	{
-		while (!_pending.empty())
-		{
-			_pool.push(_pending.top());
-			_pending.pop();
-		}
-	}
-
-private:
-	MatrixFactory()
-	{}
-
-private:
-	static MatrixFactory<DType>* _instance;
-	std::priority_queue<Matrix<DType>*, std::vector<Matrix<DType>* >, std::greater<Matrix<DType>* > > _pool;
-	std::priority_queue<Matrix<DType>* > _pending;
-};
-
-template <typename DType>
-MatrixFactory<DType>* MatrixFactory<DType>::_instance = NULL;
-
 template <typename DType = float>
 class Matrix
 {
@@ -489,6 +370,10 @@ inline Matrix<DType>* operator-(Matrix<DType>& self, Matrix<DType>& other)
 
 	return result;
 }
+
+template <typename DType>
+inline bool operator>(const Matrix<DType>& lhs, const Matrix<DType>& rhs) { return lhs.shape().prod() < rhs.shape().prod() }
+
 
 // Methods
 template <typename DType>
