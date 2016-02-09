@@ -9,47 +9,7 @@ DEFINE_bool(testing, false, "Set to true to test");
 
 #define DT float
 
-template <typename DType>
-class Layer
-{
-public:
-	Layer(Shape shape, int num_output) :
-		_in_shape(shape),
-		_out_shape({shape.m, num_output})
-	{
-		_weights = new Matrix<DType>(shape.n, num_output);
-		_output = new Matrix<DType>(shape.m, num_output);
-		_diff = new Matrix<DType>(shape.n, num_output);
 
-		for (int i = 0; i < _weights->shape().prod(); ++i)
-		{
-			(**_weights)[i] = DType(rand()) / RAND_MAX - DType(0.5);
-		}
-
-		std::cout << "Setting up:" << std::endl;
-		std::cout << "Indata shape: (" << shape.m << ", " << shape.n << ")" << std::endl;
-		std::cout << "Weight shape: (" << _weights->shape().m << ", " << _weights->shape().n << ")" << std::endl;
-		std::cout << "Output shape: (" << _output->shape().m << ", " << _output->shape().n << ")" << std::endl;
-		std::cout << "--------" << std::endl << std::endl;
-	}
-
-	virtual Matrix<DType>* forward(Matrix<DType>* in) = 0;
-	virtual Matrix<DType>* backward(Matrix<DType>* error) = 0;
-	virtual void update() = 0;
-
-	inline Matrix<DType>* W() { return _weights; }
-	inline Shape inShape() { return _in_shape; }
-	inline Shape outShape() { return _out_shape; }
-
-protected:
-	Matrix<DType>* _in;
-	Matrix<DType>* _weights;
-	Matrix<DType>* _output;
-	Matrix<DType>* _diff;
-
-	Shape _in_shape;
-	Shape _out_shape;
-};
 
 template <typename DType>
 class Sigmoid : public Layer<DType>
