@@ -1,5 +1,4 @@
-#pragma once
-
+#include "layer.hpp"
 #include "matrix.hpp"
 
 template <typename DType>

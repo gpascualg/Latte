@@ -11,41 +11,6 @@ DEFINE_bool(testing, false, "Set to true to test");
 
 
 
-template <typename DType>
-class Sigmoid : public Layer<DType>
-{
-public:
-	Sigmoid(Shape shape, int num_output) :
-		Layer(shape, num_output)
-	{}
-
-	Matrix<DType>* forward(Matrix<DType>* in)
-	{
-		// _in * _weights
-		_in = in;
-		_in->mul(_weights, _output);
-
-		// 1 / (1 + exp(_output))
-		_output->exp(DType(-1.0));
-		*_output += 1;
-		_output->pdiv(DType(1.0));
-		return _output;
-	}
-
-	Matrix<DType>* backward(Matrix<DType>* error)
-	{
-		Matrix<DType>* derivative = DType(1.0) - *_output;
-		*derivative *= *_output;
-		*error *= *derivative;
-		_in->T().mul(error, _diff);
-		return error;
-	}
-	
-	void update()
-	{ 
-		*_weights += *_diff;
-	}
-};
 
 template <typename DType>
 class Graph
