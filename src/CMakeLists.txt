@@ -1,5 +1,5 @@
 set(Latte_SOURCES
-    main.cpp
+    main.cpp matrix.cpp matrix.hpp
 )
 
 add_executable(Latte ${Latte_SOURCES})

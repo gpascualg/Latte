@@ -1,5 +1,10 @@
+#pragma once
+
+#include <iostream>
+#include <queue>
+#include <functional>
+
 #include <cblas.h>
-#include "sse_math.h"
 
 struct Shape
 {
@@ -24,6 +29,125 @@ inline DType* transpose(DType *A, DType *B, int m, int n) {
 	return B;
 }
 
+template <typename DType>
+class Matrix;
+
+template <typename DType>
+inline bool operator>(const Matrix<DType>& lhs, const Matrix<DType>& rhs) { return lhs.shape().prod() < rhs.shape().prod() }
+
+template <typename DType = float>
+class MatrixFactory
+{
+public:
+	static MatrixFactory<DType>* get()
+	{
+		if (_instance == NULL)
+		{
+			_instance = new MatrixFactory<DType>();
+		}
+
+		return _instance;
+	}
+
+	Matrix<DType>* pop(Shape shape)
+	{
+		Matrix<DType>* matrix = nullptr;
+
+		if (!_pool.empty())
+		{
+			matrix = _pool.top();
+			if (matrix->shape().prod() >= shape.prod())
+			{
+				_pool.pop();
+
+				matrix->reshape(shape);
+			}
+		}
+		else
+		{
+			matrix = new Matrix<DType>(shape);
+		}
+
+		_pending.push(matrix);
+		return matrix;
+	}
+
+	Matrix<DType>* pop(Shape shape, DType value)
+	{
+		Matrix<DType>* matrix = nullptr;
+
+		if (!_pool.empty())
+		{
+			matrix = _pool.top();
+			if (matrix->shape().prod() >= shape.prod())
+			{
+				_pool.pop();
+
+				matrix->reshape(shape);
+				for (int i = 0; i < shape.prod(); ++i)
+				{
+					(*matrix)[i] = value;
+				}
+			}
+		}
+		else
+		{
+			matrix = new Matrix<DType>(shape);
+		}
+
+		_pending.push(matrix);
+		return matrix;
+	}
+
+	Matrix<DType>* pop(Shape shape, DType* other)
+	{
+		Matrix<DType>* matrix = nullptr;
+
+		if (!_pool.empty())
+		{
+			matrix = _pool.top();
+			if (matrix->shape().prod() >= shape.prod())
+			{
+				_pool.pop();
+
+				matrix->reshape(shape);
+				for (int i = 0; i < shape.prod(); ++i)
+				{
+					(*matrix)[i] = other[i];
+				}
+			}
+		}
+		else
+		{
+			matrix = new Matrix<DType>(shape);
+		}
+
+		_pending.push(matrix);
+		return matrix;
+	}
+
+	void update()
+	{
+		while (!_pending.empty())
+		{
+			_pool.push(_pending.top());
+			_pending.pop();
+		}
+	}
+
+private:
+	MatrixFactory()
+	{}
+
+private:
+	static MatrixFactory<DType>* _instance;
+	std::priority_queue<Matrix<DType>*, std::vector<Matrix<DType>* >, std::greater<Matrix<DType>* > > _pool;
+	std::priority_queue<Matrix<DType>* > _pending;
+};
+
+template <typename DType>
+MatrixFactory<DType>* MatrixFactory<DType>::_instance = NULL;
+
 template <typename DType = float>
 class Matrix
 {
@@ -37,6 +161,7 @@ public:
 
 	virtual ~Matrix() { if(_data) free(_data); }
 
+	inline void reshape(Shape shape) { _m = shape.m; _n = shape.n; }
 	inline Shape shape() { return{ _m, _n }; }
 	inline Matrix<DType> T() { return Matrix(_n, _m, transpose<DType>(_data, NULL, _m, _n)); }
 
@@ -207,7 +332,7 @@ void Matrix<DType>::operator/=(Matrix<DType>& other)
 template <typename DType>
 inline Matrix<DType>* operator*(DType value, Matrix<DType>& self)
 {
-	Matrix<DType>* result = new Matrix<DType>(self.shape());
+	Matrix<DType>* result = MatrixFactory<DType>::get()->pop(self.shape());
 
 	for (int i = 0; i < self.shape().prod(); ++i)
 	{
@@ -220,7 +345,7 @@ inline Matrix<DType>* operator*(DType value, Matrix<DType>& self)
 template <typename DType>
 inline Matrix<DType>* operator/(DType value, Matrix<DType>& self)
 {
-	Matrix<DType>* result = new Matrix<DType>(self.shape());
+	Matrix<DType>* result = MatrixFactory<DType>::get()->pop(self.shape());
 
 	for (int i = 0; i < self.shape().prod(); ++i)
 	{
@@ -233,7 +358,7 @@ inline Matrix<DType>* operator/(DType value, Matrix<DType>& self)
 template <typename DType>
 inline Matrix<DType>* operator+(DType value, Matrix<DType>& self)
 {
-	Matrix<DType>* result = new Matrix<DType>(self.shape());
+	Matrix<DType>* result = MatrixFactory<DType>::get()->pop(self.shape());
 
 	for (int i = 0; i < self.shape().prod(); ++i)
 	{
@@ -246,7 +371,7 @@ inline Matrix<DType>* operator+(DType value, Matrix<DType>& self)
 template <typename DType>
 inline Matrix<DType>* operator-(DType value, Matrix<DType>& self)
 {
-	Matrix<DType>* result = new Matrix<DType>(self.shape());
+	Matrix<DType>* result = MatrixFactory<DType>::get()->pop(self.shape());
 
 	for (int i = 0; i < self.shape().prod(); ++i)
 	{
@@ -261,7 +386,7 @@ inline Matrix<DType>* operator-(DType value, Matrix<DType>& self)
 template <typename DType>
 inline Matrix<DType>* operator*(Matrix<DType>& self, DType value)
 {
-	Matrix<DType>* result = new Matrix<DType>(self.shape());
+	Matrix<DType>* result = MatrixFactory<DType>::get()->pop(self.shape());
 
 	for (int i = 0; i < self.shape().prod(); ++i)
 	{
@@ -274,7 +399,7 @@ inline Matrix<DType>* operator*(Matrix<DType>& self, DType value)
 template <typename DType>
 inline Matrix<DType>* operator/(Matrix<DType>& self, DType value)
 {
-	Matrix<DType>* result = new Matrix<DType>(self.shape());
+	Matrix<DType>* result = MatrixFactory<DType>::get()->pop(self.shape());
 
 	for (int i = 0; i < self.shape().prod(); ++i)
 	{
@@ -287,7 +412,7 @@ inline Matrix<DType>* operator/(Matrix<DType>& self, DType value)
 template <typename DType>
 inline Matrix<DType>* operator+(Matrix<DType>& self, DType value)
 {
-	Matrix<DType>* result = new Matrix<DType>(self.shape());
+	Matrix<DType>* result = MatrixFactory<DType>::get()->pop(self.shape());
 
 	for (int i = 0; i < self.shape().prod(); ++i)
 	{
@@ -300,7 +425,7 @@ inline Matrix<DType>* operator+(Matrix<DType>& self, DType value)
 template <typename DType>
 inline Matrix<DType>* operator-(Matrix<DType>& self, DType value)
 {
-	Matrix<DType>* result = new Matrix<DType>(self.shape());
+	Matrix<DType>* result = MatrixFactory<DType>::get()->pop(self.shape());
 
 	for (int i = 0; i < self.shape().prod(); ++i)
 	{
@@ -355,7 +480,7 @@ inline Matrix<DType>* operator+(Matrix<DType> self, DType value)
 template <typename DType>
 inline Matrix<DType>* operator-(Matrix<DType>& self, Matrix<DType>& other)
 {
-	Matrix<DType>* result = new Matrix<DType>(self.shape());
+	Matrix<DType>* result = MatrixFactory<DType>::get()->pop(self.shape());
 
 	for (int i = 0; i < self.shape().prod(); ++i)
 	{
@@ -372,51 +497,5 @@ void Matrix<DType>::pdiv(DType value, Matrix<DType>* result)
 	for (int i = 0; i < shape().prod(); ++i)
 	{
 		_data[i] = value / _data[i];
-	}
-}
-
-template <> void Matrix<float>::sum(Matrix<float>* other, float alpha, float beta)
-{
-	cblas_saxpby(shape().prod(), alpha, _data, 1, beta, other->_data, 1);
-}
-
-template <> void Matrix<double>::sum(Matrix<double>* other, double alpha, double beta)
-{
-	cblas_daxpby(shape().prod(), alpha, _data, 1, beta, other->_data, 1);
-}
-
-template <> void Matrix<float>::mul(Matrix<float>* other, Matrix<float>* result)
-{
-	cblas_sgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, _m, other->_n, _n, 1.0f, _data, _n, other->_data, other->_n, 0.0f, result->_data, other->_n);
-}
-
-template <> void Matrix<double>::mul(Matrix<double>* other, Matrix<double>* result)
-{
-	cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, _m, other->_n, _n, 1.0, _data, _n, other->_data, other->_n, 0.0, result->_data, other->_n);
-}
-
-template <> float Matrix<float>::dot(Matrix<float>* other, Matrix<float>* result)
-{
-	return cblas_sdot(_m, _data, 1, other->_data, 1);
-}
-
-template <> double Matrix<double>::dot(Matrix<double>* other, Matrix<double>* result)
-{
-	return cblas_ddot(_m, _data, 1, other->_data, 1);
-}
-
-template <> void Matrix<float>::exp(Matrix<float>* other, float alpha)
-{
-	for (int i = 0; i < shape().prod(); ++i)
-	{
-		other->_data[i] = expf(alpha*_data[i]);
-	}
-}
-
-template <> void Matrix<double>::exp(Matrix<double>* other, double alpha)
-{
-	for (int i = 0; i < shape().prod(); ++i)
-	{
-		other->_data[i] = std::exp(alpha*_data[i]);
 	}
 }
