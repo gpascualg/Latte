@@ -9,10 +9,10 @@ template <typename DType>
 class Layer;
 
 template <typename DType>
-class Graph
+class Linear
 {
 public:
-	Graph(Matrix<DType>* target, Matrix<DType>* data);
+	Linear(Matrix<DType>* target, Matrix<DType>* data);
 	
 	template <typename LType>
 	void stack(int num_output);

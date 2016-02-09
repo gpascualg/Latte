@@ -1,4 +1,4 @@
-#include "graph.hpp"
+#include "linear.hpp"
 #include "matrix.hpp"
 #include "matrix_factory.hpp"
 
@@ -7,7 +7,7 @@
 
 
 template <typename DType>
-Graph<DType>::Graph(Matrix<DType>* target, Matrix<DType>* data) :
+Linear<DType>::Linear(Matrix<DType>* target, Matrix<DType>* data) :
 	_target(target),
 	_first_in(data),
 	_k(0)
@@ -15,7 +15,7 @@ Graph<DType>::Graph(Matrix<DType>* target, Matrix<DType>* data) :
 
 template <typename DType>
 template <typename LType>
-void Graph<DType>::stack(int num_output)
+void Linear<DType>::stack(int num_output)
 {
 	LType* layer = nullptr;
 
@@ -32,13 +32,13 @@ void Graph<DType>::stack(int num_output)
 }
 
 template <typename DType>
-void Graph<DType>::stack(Layer<DType>* layer)
+void Linear<DType>::stack(Layer<DType>* layer)
 {
 	_layers.push_back(layer);
 }
 
 template <typename DType>
-void Graph<DType>::forward()
+void Linear<DType>::forward()
 {
 	Matrix<DType>* in = _first_in;
 
@@ -52,7 +52,7 @@ void Graph<DType>::forward()
 }
 
 template <typename DType>
-void Graph<DType>::backward()
+void Linear<DType>::backward()
 {
 	// Initial error
 	Matrix<DType>* error = (*_target - *_last_out);
@@ -98,17 +98,17 @@ void Graph<DType>::backward()
 
 
 // Specialization
-template Graph<float>::Graph(Matrix<float>* target, Matrix<float>* data);
-template Graph<double>::Graph(Matrix<double>* target, Matrix<double>* data);
+template Linear<float>::Linear(Matrix<float>* target, Matrix<float>* data);
+template Linear<double>::Linear(Matrix<double>* target, Matrix<double>* data);
 
-template void Graph<float>::stack<Sigmoid<float>>(int num_output);
-template void Graph<double>::stack<Sigmoid<double>>(int num_output);
+template void Linear<float>::stack<Sigmoid<float>>(int num_output);
+template void Linear<double>::stack<Sigmoid<double>>(int num_output);
 
-template void Graph<float>::stack(Layer<float>* layer);
-template void Graph<double>::stack(Layer<double>* layer);
+template void Linear<float>::stack(Layer<float>* layer);
+template void Linear<double>::stack(Layer<double>* layer);
 
-template void Graph<float>::forward();
-template void Graph<double>::forward();
+template void Linear<float>::forward();
+template void Linear<double>::forward();
 
-template void Graph<float>::backward();
-template void Graph<double>::backward();
+template void Linear<float>::backward();
+template void Linear<double>::backward();

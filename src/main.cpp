@@ -2,7 +2,7 @@
 #include <iostream>
 #include <vector>
 
-#include "graph.hpp"
+#include "linear.hpp"
 #include "matrix.hpp"
 #include "matrix_factory.hpp"
 #include "sigmoid.hpp"
@@ -25,16 +25,16 @@ int main(int argc, char** argv)
 	Matrix<DT> y(4, 1);
 	y(0, 0) = 0; y(1, 0) = 1; y(2, 0) = 1; y(3, 0) = 0;
 	
-	Graph<DT> graph(&y, &x);
-	graph.stack<Sigmoid<DT>>(50);
-	graph.stack<Sigmoid<DT>>(50);
-	graph.stack<Sigmoid<DT>>(50);
-	graph.stack<Sigmoid<DT>>(1);
+	Linear<DT> linear(&y, &x);
+	linear.stack<Sigmoid<DT>>(50);
+	linear.stack<Sigmoid<DT>>(50);
+	linear.stack<Sigmoid<DT>>(50);
+	linear.stack<Sigmoid<DT>>(1);
 	
 	for (int k = 0; k < 600000; ++k)
 	{
-		graph.forward();
-		graph.backward();
+		linear.forward();
+		linear.backward();
 	}
 
 	getchar();
