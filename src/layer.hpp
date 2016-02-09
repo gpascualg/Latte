@@ -15,9 +15,9 @@ public:
 	virtual Matrix<DType>* backward(Matrix<DType>* error) = 0;
 	virtual void update();
 
-	inline Matrix<DType>* W() { return _weights; }
-	inline Shape inShape() { return _in_shape; }
-	inline Shape outShape() { return _out_shape; }
+	inline Matrix<DType>* W();
+	inline Shape inShape();
+	inline Shape outShape();
 
 protected:
 	Matrix<DType>* _in;
@@ -28,3 +28,7 @@ protected:
 	Shape _in_shape;
 	Shape _out_shape;
 };
+
+template <typename DType> Matrix<DType>* Layer<DType>::W();
+template <typename DType> Shape Layer<DType>::inShape();
+template <typename DType> Shape Layer<DType>::outShape();

@@ -1,5 +1,10 @@
 set(Latte_SOURCES
-    main.cpp matrix.cpp matrix.hpp matrix_factory.hpp matrix_factory.cpp
+    main.cpp
+    graph.hpp graph.cpp
+    layer.hpp layer.cpp
+    matrix.hpp matrix.cpp
+    matrix_factory.hpp matrix_factory.cpp
+    sigmoid.hpp sigmoid.cpp
 )
 
 add_executable(Latte ${Latte_SOURCES})

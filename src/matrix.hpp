@@ -6,6 +6,10 @@
 
 #include <cblas.h>
 
+// This should be forward declared and methods declared on a cpp
+#include "matrix_factory.hpp"
+
+
 struct Shape
 {
 	int m;
