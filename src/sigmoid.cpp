@@ -13,21 +13,26 @@ Matrix<DType>* Sigmoid<DType>::forward(Matrix<DType>* in)
 	_in = in;
 	_in->mul(_weights, _output);
 
-	// 1 / (1 + exp(_output))
-	_output->exp(DType(-1.0));
-	*_output += 1;
-	_output->pdiv(DType(1.0));
+	// 1 / (1 + exp(-_output))
+	for (int i = 0; i < _output->shape().prod(); ++i)
+	{
+		(*_output)[i] = DType(1.0) / (DType(1.0) + exp(-(*_output)[i]));
+	}
+
 	return _output;
 }
 
 template <typename DType>
 Matrix<DType>* Sigmoid<DType>::backward(Matrix<DType>* error)
 {
-	Matrix<DType>* derivative = DType(1.0) - *_output;
-	*derivative *= *_output;
-	*error *= *derivative;
-	_in->T().mul(error, _diff);
-	return error;
+	Matrix<DType>* delta = MatrixFactory<DType>::get()->pop(error->shape());
+	for (int i = 0; i < _output->shape().prod(); ++i)
+	{
+		(*delta)[i] = (DType(1.0) - (*_output)[i]) * (*_output)[i] * (*error)[i];
+	}
+
+	_in->T().mul(delta, _diff);
+	return delta;
 }
 
 

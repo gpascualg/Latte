@@ -35,7 +35,7 @@ Matrix<DType>* MatrixFactory<DType>::pop(Shape shape, DType value)
 	Matrix<DType>* matrix = pop(shape);
 	for (int i = 0; i < shape.prod(); ++i)
 	{
-		(**matrix)[i] = value;
+		(*matrix)[i] = value;
 	}
 
 	return matrix;
@@ -47,7 +47,7 @@ Matrix<DType>* MatrixFactory<DType>::pop(Shape shape, DType* other)
 	Matrix<DType>* matrix = pop(shape);
 	for (int i = 0; i < shape.prod(); ++i)
 	{
-		(**matrix)[i] = other[i];
+		(*matrix)[i] = other[i];
 	}
 
 	return matrix;

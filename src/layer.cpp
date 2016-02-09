@@ -12,7 +12,7 @@ Layer<DType>::Layer(Shape shape, int num_output) :
 
 	for (int i = 0; i < _weights->shape().prod(); ++i)
 	{
-		(**_weights)[i] = DType(rand()) / RAND_MAX - DType(0.5);
+		(*_weights)[i] = DType(rand()) / RAND_MAX - DType(0.5);
 	}
 
 	std::cout << "Setting up:" << std::endl;

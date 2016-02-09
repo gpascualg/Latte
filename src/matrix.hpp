@@ -51,8 +51,8 @@ public:
 	inline Matrix<DType> T() { return Matrix(_n, _m, transpose<DType>(_data, NULL, _m, _n)); }
 
 	// Indexing
-	inline DType* operator*() { return _data; };
 	inline DType& operator()(int x, int y) { return _data[(x * _n) + y];	};
+	inline DType& operator[](int idx) { return _data[idx]; }
 
 	// Sums
 	inline void operator+=(DType value);
@@ -221,7 +221,7 @@ inline Matrix<DType>* operator*(DType value, Matrix<DType>& self)
 
 	for (int i = 0; i < self.shape().prod(); ++i)
 	{
-		(**result)[i] = value * (*self)[i];
+		(*result)[i] = value * self[i];
 	}
 
 	return result;
@@ -234,7 +234,7 @@ inline Matrix<DType>* operator/(DType value, Matrix<DType>& self)
 
 	for (int i = 0; i < self.shape().prod(); ++i)
 	{
-		(*result)[i] = value / (*self)[i];
+		(*result)[i] = value / self[i];
 	}
 
 	return result;
@@ -247,7 +247,7 @@ inline Matrix<DType>* operator+(DType value, Matrix<DType>& self)
 
 	for (int i = 0; i < self.shape().prod(); ++i)
 	{
-		(**result)[i] = value + (*self)[i];
+		(*result)[i] = value + self[i];
 	}
 
 	return result;
@@ -260,7 +260,7 @@ inline Matrix<DType>* operator-(DType value, Matrix<DType>& self)
 
 	for (int i = 0; i < self.shape().prod(); ++i)
 	{
-		(**result)[i] = value - (*self)[i];
+		(*result)[i] = value - self[i];
 	}
 
 	return result;
@@ -275,7 +275,7 @@ inline Matrix<DType>* operator*(Matrix<DType>& self, DType value)
 
 	for (int i = 0; i < self.shape().prod(); ++i)
 	{
-		(**result)[i] = (*self)[i] * value;
+		(*result)[i] = self[i] * value;
 	}
 
 	return result;
@@ -288,7 +288,7 @@ inline Matrix<DType>* operator/(Matrix<DType>& self, DType value)
 
 	for (int i = 0; i < self.shape().prod(); ++i)
 	{
-		(**result)[i] = (*self)[i] / value;
+		(*result)[i] = self[i] / value;
 	}
 
 	return result;
@@ -301,7 +301,7 @@ inline Matrix<DType>* operator+(Matrix<DType>& self, DType value)
 
 	for (int i = 0; i < self.shape().prod(); ++i)
 	{
-		(**result)[i] = (*self)[i] + value;
+		(*result)[i] = self[i] + value;
 	}
 
 	return result;
@@ -314,7 +314,7 @@ inline Matrix<DType>* operator-(Matrix<DType>& self, DType value)
 
 	for (int i = 0; i < self.shape().prod(); ++i)
 	{
-		(**result)[i] = (*self)[i] - value;
+		(*result)[i] = self[i] - value;
 	}
 
 	return result;
@@ -330,7 +330,7 @@ inline Matrix<DType>* operator*(Matrix<DType> self, DType value)
 
 	for (int i = 0; i < self.shape().prod(); ++i)
 	{
-		(**result)[i] = (*self)[i] * value;
+		(*result)[i] = (*self)[i] * value;
 	}
 
 	return result;
@@ -343,7 +343,7 @@ inline Matrix<DType>* operator/(Matrix<DType> self, DType value)
 
 	for (int i = 0; i < self.shape().prod(); ++i)
 	{
-		(**result)[i] = (*self)[i] / value;
+		(*result)[i] = (*self)[i] / value;
 	}
 
 	return result;
@@ -356,7 +356,7 @@ inline Matrix<DType>* operator+(Matrix<DType> self, DType value)
 
 	for (int i = 0; i < self.shape().prod(); ++i)
 	{
-		(**result)[i] = (*self)[i] + value;
+		(*result)[i] = (*self)[i] + value;
 	}
 
 	return result;
@@ -369,7 +369,7 @@ inline Matrix<DType>* operator-(Matrix<DType>& self, Matrix<DType>& other)
 
 	for (int i = 0; i < self.shape().prod(); ++i)
 	{
-		(**result)[i] = (*self)[i] - (*other)[i];
+		(*result)[i] = self[i] - other[i];
 	}
 
 	return result;
