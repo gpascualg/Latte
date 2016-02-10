@@ -25,7 +25,7 @@ int main(int argc, char** argv)
 	Matrix<DT> y(4, 1);
 	y(0, 0) = 0; y(1, 0) = 1; y(2, 0) = 1; y(3, 0) = 0;
 	
-	Linear<DT> linear(&y, &x);
+	Linear<DT> linear(&x, &y);
 	linear.stack<Sigmoid<DT>>(50);
 	linear.stack<Sigmoid<DT>>(50);
 	linear.stack<Sigmoid<DT>>(50);
