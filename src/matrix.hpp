@@ -17,16 +17,25 @@ struct Shape
 
 	Shape(int m, int n) : m(m), n(n) {}
 	inline int prod() { return m*n; }
+	inline Shape T() { return { n, m }; }
 };
 
 template <typename DType>
-inline DType* transpose(DType *A, DType *B, int m, int n) {
-	if (!B) B = (DType*)malloc(m * n * sizeof(DType));
+inline Matrix<DType>* transpose(Matrix<DType>* A, Matrix<DType>* B) {
+	if (!B)
+	{
+		B = MatrixFactory<DType>::get()->pop(A->shape().T());
+	}
+
+	Matrix<DType>& O = *A;
+	Matrix<DType>& D = *B;
+	int m = O.shape().m;
+	int n = O.shape().n;
 
 	int i, j;
 	for (i = 0; i < m; ++i) {
 		for (j = 0; j < n; ++j) {
-			B[j*m + i] = A[i*n + j];
+			D[j*m + i] = O[i*n + j];
 		}
 	}
 
@@ -44,11 +53,14 @@ public:
 	explicit Matrix(Shape shape, DType value);
 	explicit Matrix(Shape shape, Matrix<DType>* data, bool copy = false);
 
-	virtual ~Matrix() { if(_data) free(_data); }
+	virtual ~Matrix() {
+		if (_data) free(_data);
+	}
 
+	inline int size() const { return _data_size; }
 	inline void reshape(Shape shape) { _m = shape.m; _n = shape.n; }
 	inline Shape shape() { return{ _m, _n }; }
-	inline Matrix<DType> T() { return Matrix(_n, _m, transpose<DType>(_data, NULL, _m, _n)); }
+	inline Matrix<DType>* T() { return transpose<DType>(this, NULL); }
 
 	// Indexing
 	inline DType& operator()(int x, int y) { return _data[(x * _n) + y];	};
@@ -77,6 +89,7 @@ public:
 
 private:
 	DType* _data;
+	int _data_size;
 	int _m;
 	int _n;
 };
@@ -86,6 +99,7 @@ private:
 template <typename DType>
 Matrix<DType>::Matrix(int m, int n) :
 	_data((DType*)malloc(m * n * sizeof(DType))),
+	_data_size(m * n),
 	_m(m),
 	_n(n)
 {
@@ -127,7 +141,8 @@ Matrix<DType>::Matrix(Shape shape, Matrix<DType>* data, bool copy) :
 {
 	if (copy)
 	{
-		int size = _m * _n * sizeof(DType);
+		_data_size = _m * _n;
+		int size = _data_size * sizeof(DType);
 		_data = (DType*)malloc(size);
 		memcpy(_data, data->_data, size);
 	}
@@ -376,8 +391,10 @@ inline Matrix<DType>* operator-(Matrix<DType>& self, Matrix<DType>& other)
 }
 
 template <typename DType>
-inline bool operator>(const Matrix<DType>& lhs, const Matrix<DType>& rhs) { return lhs.shape().prod() < rhs.shape().prod() }
+inline bool operator>(const Matrix<DType>& lhs, const Matrix<DType>& rhs) { return lhs.shape().prod() > rhs.shape().prod(); }
 
+template <typename DType>
+inline bool operator<(const Matrix<DType>& lhs, const Matrix<DType>& rhs) { return lhs.shape().prod() < rhs.shape().prod(); }
 
 // Methods
 template <typename DType>

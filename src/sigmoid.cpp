@@ -31,7 +31,7 @@ Matrix<DType>* Sigmoid<DType>::backward(Matrix<DType>* error)
 		(*delta)[i] = (DType(1.0) - (*_output)[i]) * (*_output)[i] * (*error)[i];
 	}
 
-	_in->T().mul(delta, _diff);
+	_in->T()->mul(delta, _diff);
 	return delta;
 }
 

@@ -3,6 +3,12 @@
 
 
 template <typename DType>
+bool MatrixCompare<DType>::operator() (const Matrix<DType>* lhs, const Matrix<DType>* rhs)
+{
+	return lhs->size() < rhs->size();
+}
+
+template <typename DType>
 MatrixFactory<DType>::MatrixFactory()
 {}
 
@@ -13,19 +19,21 @@ Matrix<DType>* MatrixFactory<DType>::pop(Shape shape)
 
 	if (!_pool.empty())
 	{
-		matrix = _pool.top();
-		if (matrix->shape().prod() >= shape.prod())
+		Matrix<DType>* temp_matrix = _pool.top();
+		if (temp_matrix->size() >= shape.prod())
 		{
 			_pool.pop();
-			matrix->reshape(shape);
+			temp_matrix->reshape(shape);
+			matrix = temp_matrix;
 		}
 	}
-	else
+	
+	if (matrix == nullptr)
 	{
 		matrix = new Matrix<DType>(shape);
 	}
 
-	_pending.push(matrix);
+	_pending.push_back(matrix);
 	return matrix;
 }
 
@@ -58,8 +66,8 @@ void MatrixFactory<DType>::update()
 {
 	while (!_pending.empty())
 	{
-		_pool.push(_pending.top());
-		_pending.pop();
+		_pool.push(_pending.back());
+		_pending.pop_back();
 	}
 }
 

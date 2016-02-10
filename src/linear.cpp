@@ -79,7 +79,7 @@ void Linear<DType>::backward()
 	{
 		Matrix<DType>* delta = MatrixFactory<DType>::get()->pop({ last_layer->outShape().m, last_layer->W()->shape().m });
 
-		error->mul(&last_layer->W()->T(), delta);
+		error->mul(last_layer->W()->T(), delta);
 		last_layer = *it;
 		error = last_layer->backward(delta);
 	}
