@@ -41,6 +41,9 @@ int main(int argc, char** argv)
 		MatrixFactory<DT>::get()->update();
 	}
 
+	// Free memory
+	MatrixFactory<DT>::get()->destroy();
+
 	getchar();
 	return 0;
 }

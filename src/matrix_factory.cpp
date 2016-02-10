@@ -71,6 +71,23 @@ void MatrixFactory<DType>::update()
 	}
 }
 
+template <typename DType>
+void MatrixFactory<DType>::destroy()
+{
+	while (!_pending.empty())
+	{
+		delete _pending.back();
+		_pending.pop_back();
+	}
+
+	while (!_pool.empty())
+	{
+		delete _pool.top();
+		_pool.pop();
+	}
+}
+
+
 // Specializations
 template MatrixFactory<float>::MatrixFactory();
 template MatrixFactory<double>::MatrixFactory();
@@ -86,3 +103,6 @@ template Matrix<double>* MatrixFactory<double>::pop(Shape shape, double* other);
 
 template void MatrixFactory<float>::update();
 template void MatrixFactory<double>::update();
+
+template void MatrixFactory<float>::destroy();
+template void MatrixFactory<double>::destroy();

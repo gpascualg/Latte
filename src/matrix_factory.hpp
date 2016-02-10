@@ -25,6 +25,7 @@ public:
 	Matrix<DType>* pop(Shape shape, DType value);
 	Matrix<DType>* pop(Shape shape, DType* other);
 	void update();
+	void destroy();
 
 private:
 	MatrixFactory();

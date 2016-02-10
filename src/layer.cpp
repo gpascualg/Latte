@@ -23,6 +23,14 @@ Layer<DType>::Layer(Shape shape, int num_output) :
 }
 
 template <typename DType>
+Layer<DType>::~Layer()
+{
+	delete _weights;
+	delete _output;
+	delete _diff;
+}
+
+template <typename DType>
 void Layer<DType>::update()
 {
 	*_weights += *_diff;

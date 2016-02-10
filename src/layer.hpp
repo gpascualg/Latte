@@ -10,6 +10,7 @@ class Layer
 {
 public:
 	Layer(Shape shape, int num_output);
+	virtual ~Layer();
 
 	virtual Matrix<DType>* forward(Matrix<DType>* in) = 0;
 	virtual Matrix<DType>* backward(Matrix<DType>* error) = 0;
