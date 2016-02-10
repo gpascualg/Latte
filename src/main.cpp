@@ -33,8 +33,12 @@ int main(int argc, char** argv)
 	
 	for (int k = 0; k < 600000; ++k)
 	{
+		// Forward net
 		linear.forward();
 		linear.backward();
+
+		// Update Matrix pool
+		MatrixFactory<DT>::get()->update();
 	}
 
 	getchar();

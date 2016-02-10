@@ -90,9 +90,6 @@ void Linear<DType>::backward()
 	{
 		(*it)->update();
 	}
-
-	// Update Matrix pool
-	MatrixFactory<DType>::get()->update();
 }
 
 
