@@ -15,8 +15,8 @@ public:
 	Layer(Shape shape, int num_output, Activation<DType>* activaton);
 	virtual ~Layer();
 
-	virtual Matrix<DType>* forward(Matrix<DType>* in) = 0;
-	virtual Matrix<DType>* backward(Matrix<DType>* error) = 0;
+	virtual Matrix<DType>* forward(Matrix<DType>* in);
+	virtual Matrix<DType>* backward(Matrix<DType>* error);
 	virtual void update();
 
 	inline Matrix<DType>* W();
@@ -29,6 +29,7 @@ protected:
 	Matrix<DType>* _in;
 	Matrix<DType>* _weights;
 	Matrix<DType>* _output;
+	Matrix<DType>* _delta;
 	Matrix<DType>* _diff;
 
 	Shape _in_shape;

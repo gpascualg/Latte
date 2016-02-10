@@ -1,5 +1,8 @@
 #include "layer.hpp"
+#include "activations/activation.hpp"
 #include "matrix.hpp"
+#include "matrix_factory.hpp"
+
 
 template <typename DType>
 Layer<DType>::Layer(Shape shape, int num_output, Activation<DType>* activation) :
@@ -33,8 +36,28 @@ Layer<DType>::~Layer()
 }
 
 template <typename DType>
+Matrix<DType>* Layer<DType>::forward(Matrix<DType>* in)
+{
+	_in = in;
+	_in->mul(_weights, _output);
+
+	_activaton->apply(_output);
+
+	return _output;
+}
+
+template <typename DType>
+Matrix<DType>* Layer<DType>::backward(Matrix<DType>* error)
+{
+	_delta = MatrixFactory<DType>::get()->pop(error->shape());
+	_activaton->derivative(_output, _delta, error);
+	return _delta;
+}
+
+template <typename DType>
 void Layer<DType>::update()
 {
+	_in->T()->mul(_delta, _diff);
 	*_weights += *_diff;
 }
 
@@ -46,6 +69,12 @@ template <typename DType> Shape Layer<DType>::outShape() { return _out_shape; }
 // Specializations
 template Layer<float>::Layer(Shape shape, int num_output, Activation<float>* activation);
 template Layer<double>::Layer(Shape shape, int num_output, Activation<double>* activation);
+
+template Matrix<float>* Layer<float>::forward(Matrix<float>* in);
+template Matrix<double>* Layer<double>::forward(Matrix<double>* in);
+
+template Matrix<float>* Layer<float>::backward(Matrix<float>* error);
+template Matrix<double>* Layer<double>::backward(Matrix<double>* error);
 
 template void Layer<float>::update();
 template void Layer<double>::update();
