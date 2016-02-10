@@ -1,6 +1,6 @@
 set(Latte_SOURCES
     main.cpp
-    layer.hpp layer.cpp
+    layer.hpp layer.cpp layer_iterator.cpp 
     linear.hpp linear.cpp
     matrix.hpp matrix.cpp
     matrix_factory.hpp matrix_factory.cpp

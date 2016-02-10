@@ -8,17 +8,8 @@
 
 // This should be forward declared and methods declared on a cpp
 #include "matrix_factory.hpp"
+#include "common.h"
 
-
-struct Shape
-{
-	int m;
-	int n;
-
-	Shape(int m, int n) : m(m), n(n) {}
-	inline int prod() { return m*n; }
-	inline Shape T() { return { n, m }; }
-};
 
 template <typename DType>
 inline Matrix<DType>* transpose(Matrix<DType>* A, Matrix<DType>* B) {

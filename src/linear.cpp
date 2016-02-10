@@ -7,9 +7,11 @@
 
 
 template <typename DType>
-Linear<DType>::Linear(Matrix<DType>* target, Matrix<DType>* data) :
+Linear<DType>::Linear(Matrix<DType>* data, Matrix<DType>* target) :
+	_data(data),
 	_target(target),
-	_first_in(data),
+	_firstLayer(nullptr),
+	_lastLayer(nullptr),
 	_k(0)
 {}
 
@@ -19,13 +21,13 @@ void Linear<DType>::stack(int num_output)
 {
 	LType* layer = nullptr;
 
-	if (_layers.empty())
+	if (!_firstLayer)
 	{
-		layer = new LType(_first_in->shape(), num_output);
+		layer = new LType(_data->shape(), num_output);
 	}
 	else
 	{
-		layer = new LType(_layers.back()->outShape(), num_output);
+		layer = new LType(_lastLayer->outShape(), num_output);
 	}
 
 	stack(layer);
@@ -34,28 +36,35 @@ void Linear<DType>::stack(int num_output)
 template <typename DType>
 void Linear<DType>::stack(Layer<DType>* layer)
 {
-	_layers.push_back(layer);
+	if (!_firstLayer)
+	{
+		_firstLayer = layer;
+		layer->connect(_data);
+	}
+	else
+	{
+		layer->connect(_lastLayer);
+	}
+
+	_lastLayer = layer;
 }
 
 template <typename DType>
 void Linear<DType>::forward()
 {
-	Matrix<DType>* in = _first_in;
-
-	auto it = _layers.begin();
-	for (; it != _layers.end(); ++it)
+	auto it = _firstLayer->iterate();
+	for (; it.next(); ++it)
 	{
-		in = (*it)->forward(in);
+		(*it)->forward();
 	}
-
-	_last_out = in;
 }
 
 template <typename DType>
 void Linear<DType>::backward()
 {
 	// Initial error
-	Matrix<DType>* error = (*_target - *_last_out);
+	Matrix<DType>* predicted = _lastLayer->output();
+	Matrix<DType>* error = (*_target - *predicted);
 
 	if ((_k % 10000) == 0)
 	{
@@ -65,28 +74,24 @@ void Linear<DType>::backward()
 
 		std::cout << "ERROR: " << (sum / error->shape().prod()) << std::endl;
 		std::cout << (*_target)(0, 0) << "\t" << (*_target)(1, 0) << "\t" << (*_target)(2, 0) << "\t" << (*_target)(3, 0) << std::endl;
-		std::cout << (*_last_out)(0, 0) << "\t" << (*_last_out)(1, 0) << "\t" << (*_last_out)(2, 0) << "\t" << (*_last_out)(3, 0) << std::endl << std::endl;
+		std::cout << (*predicted)(0, 0) << "\t" << (*predicted)(1, 0) << "\t" << (*predicted)(2, 0) << "\t" << (*predicted)(3, 0) << std::endl << std::endl;
 	}
 	++_k;
 
+	auto it = _lastLayer->iterate();
+	error = _lastLayer->backward(error);
+
 	// Skip last, it will be manually computed
-	auto last_layer = _layers.back();
-	auto it = ++_layers.rbegin();
-
-	error = last_layer->backward(error);
-
-	for (; it != _layers.rend(); ++it)
+	for (--it; it.next(); --it)
 	{
-		Matrix<DType>* delta = MatrixFactory<DType>::get()->pop({ last_layer->outShape().m, last_layer->W()->shape().m });
-
-		error->mul(last_layer->W()->T(), delta);
-		last_layer = *it;
-		error = last_layer->backward(delta);
+		Matrix<DType>* delta = MatrixFactory<DType>::get()->pop({ it.last()->outShape().m, it.last()->W()->shape().m });
+		error->mul(it.last()->W()->T(), delta);
+		error = (*it)->backward(delta);
 	}
 
 	// Update layers
-	it = _layers.rbegin();
-	for (; it != _layers.rend(); ++it)
+	it = _lastLayer->iterate();
+	for (; it.next(); --it)
 	{
 		(*it)->update();
 	}

@@ -36,13 +36,10 @@ Layer<DType>::~Layer()
 }
 
 template <typename DType>
-Matrix<DType>* Layer<DType>::forward(Matrix<DType>* in)
+Matrix<DType>* Layer<DType>::forward()
 {
-	_in = in;
 	_in->mul(_weights, _output);
-
 	_activaton->apply(_output);
-
 	return _output;
 }
 
@@ -70,8 +67,8 @@ template <typename DType> Shape Layer<DType>::outShape() { return _out_shape; }
 template Layer<float>::Layer(Shape shape, int num_output, Activation<float>* activation);
 template Layer<double>::Layer(Shape shape, int num_output, Activation<double>* activation);
 
-template Matrix<float>* Layer<float>::forward(Matrix<float>* in);
-template Matrix<double>* Layer<double>::forward(Matrix<double>* in);
+template Matrix<float>* Layer<float>::forward();
+template Matrix<double>* Layer<double>::forward();
 
 template Matrix<float>* Layer<float>::backward(Matrix<float>* error);
 template Matrix<double>* Layer<double>::backward(Matrix<double>* error);

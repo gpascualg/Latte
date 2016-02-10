@@ -76,14 +76,16 @@ MatrixFactory<DType>::~MatrixFactory()
 {
 	while (!_pending.empty())
 	{
-		delete _pending.back();
+		auto layer =_pending.back();
 		_pending.pop_back();
+		delete layer;
 	}
 
 	while (!_pool.empty())
 	{
-		delete _pool.top();
+		auto layer = _pool.top();
 		_pool.pop();
+		delete layer;
 	}
 }
 

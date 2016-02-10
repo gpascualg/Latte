@@ -12,7 +12,7 @@ template <typename DType>
 class Linear
 {
 public:
-	Linear(Matrix<DType>* target, Matrix<DType>* data);
+	Linear(Matrix<DType>* data, Matrix<DType>* target);
 	
 	template <typename LType>
 	void stack(int num_output);
@@ -24,8 +24,9 @@ public:
 
 private:
 	int _k;
-	std::vector<Layer<DType>* > _layers;
+	Layer<DType>* _firstLayer;
+	Layer<DType>* _lastLayer;
+
+	Matrix<DType>* _data;
 	Matrix<DType>* _target;
-	Matrix<DType>* _first_in;
-	Matrix<DType>* _last_out;
 };
