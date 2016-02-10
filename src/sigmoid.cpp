@@ -1,9 +1,10 @@
 #include "sigmoid.hpp"
 #include "matrix.hpp"
+#include "activations/sigmoid_activation.hpp"
 
 template <typename DType>
 Sigmoid<DType>::Sigmoid(Shape shape, int num_output) :
-	Layer(shape, num_output)
+	Layer(shape, num_output, Activation<DType>::get<SigmoidActivation<DType>>())
 {}
 
 template <typename DType>
@@ -13,11 +14,7 @@ Matrix<DType>* Sigmoid<DType>::forward(Matrix<DType>* in)
 	_in = in;
 	_in->mul(_weights, _output);
 
-	// 1 / (1 + exp(-_output))
-	for (int i = 0; i < _output->shape().prod(); ++i)
-	{
-		(*_output)[i] = DType(1.0) / (DType(1.0) + exp(-(*_output)[i]));
-	}
+	_activaton->apply(_output);
 
 	return _output;
 }
@@ -26,10 +23,7 @@ template <typename DType>
 Matrix<DType>* Sigmoid<DType>::backward(Matrix<DType>* error)
 {
 	Matrix<DType>* delta = MatrixFactory<DType>::get()->pop(error->shape());
-	for (int i = 0; i < _output->shape().prod(); ++i)
-	{
-		(*delta)[i] = (DType(1.0) - (*_output)[i]) * (*_output)[i] * (*error)[i];
-	}
+	_activaton->derivative(_output, delta, error);
 
 	_in->T()->mul(delta, _diff);
 	return delta;

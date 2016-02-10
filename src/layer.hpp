@@ -6,10 +6,13 @@ class Matrix;
 struct Shape;
 
 template <typename DType>
+class Activation;
+
+template <typename DType>
 class Layer
 {
 public:
-	Layer(Shape shape, int num_output);
+	Layer(Shape shape, int num_output, Activation<DType>* activaton);
 	virtual ~Layer();
 
 	virtual Matrix<DType>* forward(Matrix<DType>* in) = 0;
@@ -21,6 +24,8 @@ public:
 	inline Shape outShape();
 
 protected:
+	Activation<DType>* _activaton;
+
 	Matrix<DType>* _in;
 	Matrix<DType>* _weights;
 	Matrix<DType>* _output;

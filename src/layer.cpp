@@ -2,7 +2,8 @@
 #include "matrix.hpp"
 
 template <typename DType>
-Layer<DType>::Layer(Shape shape, int num_output) :
+Layer<DType>::Layer(Shape shape, int num_output, Activation<DType>* activation) :
+	_activaton(activation),
 	_in_shape(shape),
 	_out_shape({ shape.m, num_output })
 {
@@ -43,8 +44,8 @@ template <typename DType> Shape Layer<DType>::outShape() { return _out_shape; }
 
 
 // Specializations
-template Layer<float>::Layer(Shape shape, int num_output);
-template Layer<double>::Layer(Shape shape, int num_output);
+template Layer<float>::Layer(Shape shape, int num_output, Activation<float>* activation);
+template Layer<double>::Layer(Shape shape, int num_output, Activation<double>* activation);
 
 template void Layer<float>::update();
 template void Layer<double>::update();
