@@ -6,6 +6,7 @@ Layer<DType>::Layer(Shape shape, int num_output) :
 	_in_shape(shape),
 	_out_shape({ shape.m, num_output })
 {
+	// Never use MatrixFactory here, they mustn't be recycled
 	_weights = new Matrix<DType>(shape.n, num_output);
 	_output = new Matrix<DType>(shape.m, num_output);
 	_diff = new Matrix<DType>(shape.n, num_output);

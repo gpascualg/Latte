@@ -53,9 +53,7 @@ public:
 	explicit Matrix(Shape shape, DType value);
 	explicit Matrix(Shape shape, Matrix<DType>* data, bool copy = false);
 
-	virtual ~Matrix() {
-		if (_data) free(_data);
-	}
+	virtual ~Matrix() { if (_data) free(_data); }
 
 	inline int size() const { return _data_size; }
 	inline void reshape(Shape shape) { _m = shape.m; _n = shape.n; }

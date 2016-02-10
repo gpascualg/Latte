@@ -72,7 +72,7 @@ void MatrixFactory<DType>::update()
 }
 
 template <typename DType>
-void MatrixFactory<DType>::destroy()
+MatrixFactory<DType>::~MatrixFactory()
 {
 	while (!_pending.empty())
 	{
@@ -85,6 +85,13 @@ void MatrixFactory<DType>::destroy()
 		delete _pool.top();
 		_pool.pop();
 	}
+}
+
+template <typename DType>
+void MatrixFactory<DType>::destroy()
+{
+	delete _instance;
+	_instance = nullptr;
 }
 
 

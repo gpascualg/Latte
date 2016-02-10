@@ -31,7 +31,7 @@ int main(int argc, char** argv)
 	linear.stack<Sigmoid<DT>>(50);
 	linear.stack<Sigmoid<DT>>(1);
 	
-	for (int k = 0; k < 600000; ++k)
+	for (int k = 0; k < 60000000; ++k)
 	{
 		// Forward net
 		linear.forward();

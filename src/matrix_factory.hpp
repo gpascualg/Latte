@@ -19,6 +19,7 @@ template <typename DType>
 class MatrixFactory
 {
 public:
+	~MatrixFactory();
 	static MatrixFactory<DType>* get();
 
 	Matrix<DType>* pop(Shape shape);
