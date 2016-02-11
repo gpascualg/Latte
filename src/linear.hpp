@@ -21,7 +21,6 @@ public:
 	void forward();
 	void backward();
 
-
 private:
 	int _k;
 	Layer<DType>* _firstLayer;

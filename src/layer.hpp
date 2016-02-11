@@ -7,7 +7,6 @@
 // This should be forward declared and methods declared on a cpp
 #include "common.h"
 
-
 template <typename DType>
 class Matrix;
 
@@ -15,6 +14,9 @@ struct Shape;
 
 template <typename DType>
 class Activation;
+
+template <typename DType>
+class Filler;
 
 template <typename DType>
 class Layer;
@@ -45,7 +47,7 @@ public:
 	};
 
 public:
-	Layer(Shape shape, int num_output, Activation<DType>* activaton);
+	Layer(Shape shape, int num_output, Activation<DType>* activaton, Filler<DType>* filler);
 	virtual ~Layer();
 
 	virtual Matrix<DType>* forward();

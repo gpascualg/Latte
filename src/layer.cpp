@@ -1,11 +1,12 @@
 #include "layer.hpp"
 #include "activations/activation.hpp"
+#include "fillers/filler.hpp"
 #include "matrix.hpp"
 #include "matrix_factory.hpp"
 
 
 template <typename DType>
-Layer<DType>::Layer(Shape shape, int num_output, Activation<DType>* activation) :
+Layer<DType>::Layer(Shape shape, int num_output, Activation<DType>* activation, Filler<DType>* filler) :
 	_activaton(activation),
 	_in_shape(shape),
 	_out_shape({ shape.m, num_output })
@@ -15,10 +16,8 @@ Layer<DType>::Layer(Shape shape, int num_output, Activation<DType>* activation) 
 	_output = new Matrix<DType>(shape.m, num_output);
 	_diff = new Matrix<DType>(shape.n, num_output);
 
-	for (int i = 0; i < _weights->shape().prod(); ++i)
-	{
-		(*_weights)[i] = DType(rand()) / RAND_MAX - DType(0.5);
-	}
+	// Fill initial weights
+	filler->fill(_weights);
 
 	std::cout << "Setting up:" << std::endl;
 	std::cout << "Indata shape: (" << shape.m << ", " << shape.n << ")" << std::endl;
@@ -64,8 +63,8 @@ template <typename DType> Shape Layer<DType>::outShape() { return _out_shape; }
 
 
 // Specializations
-template Layer<float>::Layer(Shape shape, int num_output, Activation<float>* activation);
-template Layer<double>::Layer(Shape shape, int num_output, Activation<double>* activation);
+template Layer<float>::Layer(Shape shape, int num_output, Activation<float>* activation, Filler<float>* filler);
+template Layer<double>::Layer(Shape shape, int num_output, Activation<double>* activation, Filler<double>* filler);
 
 template Matrix<float>* Layer<float>::forward();
 template Matrix<double>* Layer<double>::forward();
