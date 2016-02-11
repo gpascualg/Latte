@@ -53,8 +53,8 @@ Matrix<DType>* Layer<DType>::backward(Matrix<DType>* error)
 template <typename DType>
 void Layer<DType>::update()
 {
-	_in->T()->mul(_delta, _diff);
-	*_weights += *_diff;
+	// _weights = 1.0 * _in.T * _delta + 1.0 * _weights
+	_in->T()->mul(_delta, _weights, 1.0, 1.0);
 }
 
 template <typename DType> Matrix<DType>* Layer<DType>::W() { return _weights; }

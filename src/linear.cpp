@@ -68,10 +68,7 @@ void Linear<DType>::backward()
 
 	if ((_k % 10000) == 0)
 	{
-		DType sum = DType(0.0);
-		for (int i = 0; i < error->shape().prod(); ++i)
-			sum += abs((*error)[i]);
-
+		DType sum = error->sum();
 		std::cout << "ERROR: " << (sum / error->shape().prod()) << std::endl;
 		std::cout << (*_target)(0, 0) << "\t" << (*_target)(1, 0) << "\t" << (*_target)(2, 0) << "\t" << (*_target)(3, 0) << std::endl;
 		std::cout << (*predicted)(0, 0) << "\t" << (*predicted)(1, 0) << "\t" << (*predicted)(2, 0) << "\t" << (*predicted)(3, 0) << std::endl << std::endl;

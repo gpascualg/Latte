@@ -69,6 +69,7 @@ public:
 	inline void operator+=(Matrix<DType>& value);
 	inline void operator-=(DType value);
 	inline void operator-=(Matrix<DType>& value);
+	inline DType sum();
 
 	// Mult
 	inline void operator*=(DType value);
@@ -79,7 +80,7 @@ public:
 	void sum(Matrix<DType>* other, DType alpha = DType(1.0), DType beta = DType(1.0));
 	inline void pdiv(DType val) { pdiv(val, this); }
 	inline void pdiv(DType val, Matrix<DType>* result);
-	inline void mul(Matrix<DType>* other, Matrix<DType>* result);
+	inline void mul(Matrix<DType>* other, Matrix<DType>* result, DType alpha = DType(1.0), DType beta = DType(0.0));
 	DType dot(Matrix<DType>* other, Matrix<DType>* result);
 
 	void exp(DType alpha = DType(1.0)) { exp(this, alpha); }
@@ -224,13 +225,14 @@ void Matrix<DType>::operator+=(DType value)
 	}
 }
 
-template <typename DType>
-void Matrix<DType>::operator+=(Matrix<DType>& other)
+void Matrix<float>::operator+=(Matrix<float>& other)
 {
-	for (int i = 0; i < shape().prod(); ++i)
-	{
-		_data[i] += other._data[i];
-	}
+	cblas_saxpy(shape().prod(), 1.0, other._data, 1, _data, 1);
+}
+
+void Matrix<double>::operator+=(Matrix<double>& other)
+{
+	cblas_daxpy(shape().prod(), 1.0, other._data, 1, _data, 1);
 }
 
 template <typename DType>
@@ -242,24 +244,26 @@ void Matrix<DType>::operator-=(DType value)
 	}
 }
 
-template <typename DType>
-void Matrix<DType>::operator-=(Matrix<DType>& other)
+void Matrix<float>::operator-=(Matrix<float>& other)
 {
-	for (int i = 0; i < shape().prod(); ++i)
-	{
-		_data[i] -= other._data[i];
-	}
+	cblas_saxpy(shape().prod(), -1.0, other._data, 1, _data, 1);
+}
+
+void Matrix<double>::operator-=(Matrix<double>& other)
+{
+	cblas_daxpy(shape().prod(), -1.0, other._data, 1, _data, 1);
 }
 
 
 // Mult operators
-template <typename DType>
-void Matrix<DType>::operator*=(DType value)
+void Matrix<float>::operator*=(float value)
 {
-	for (int i = 0; i < shape().prod(); ++i)
-	{
-		_data[i] *= value;
-	}
+	cblas_sscal(shape().prod(), value, _data, 1);
+}
+
+void Matrix<double>::operator*=(double value)
+{
+	cblas_dscal(shape().prod(), value, _data, 1);
 }
 
 template <typename DType>
@@ -468,18 +472,28 @@ void Matrix<DType>::pdiv(DType value, Matrix<DType>* result)
 	}
 }
 
-void Matrix<float>::mul(Matrix<float>* other, Matrix<float>* result)
+void Matrix<float>::mul(Matrix<float>* other, Matrix<float>* result, float alpha, float beta)
 {
 	int lda = _transpose == CblasNoTrans ? _n : _m;
 	int ldb = other->_transpose == CblasNoTrans ? other->_n : _n;
 
-	cblas_sgemm(CblasRowMajor, _transpose, other->_transpose, _m, other->_n, _n, 1.0f, _data, lda, other->_data, ldb, 0.0f, result->_data, other->_n);
+	cblas_sgemm(CblasRowMajor, _transpose, other->_transpose, _m, other->_n, _n, alpha, _data, lda, other->_data, ldb, beta, result->_data, other->_n);
 }
 
-void Matrix<double>::mul(Matrix<double>* other, Matrix<double>* result)
+void Matrix<double>::mul(Matrix<double>* other, Matrix<double>* result, double alpha, double beta)
 {
 	int lda = _transpose == CblasNoTrans ? _n : _m;
 	int ldb = other->_transpose == CblasNoTrans ? other->_n : _n;
 
-	cblas_dgemm(CblasRowMajor, _transpose, other->_transpose, _m, other->_n, _n, 1.0, _data, lda, other->_data, ldb, 0.0, result->_data, other->_n);
+	cblas_dgemm(CblasRowMajor, _transpose, other->_transpose, _m, other->_n, _n, alpha, _data, lda, other->_data, ldb, beta, result->_data, other->_n);
+}
+
+float Matrix<float>::sum()
+{ 
+	return cblas_sasum(shape().prod(), _data, 1); 
+}
+
+double Matrix<double>::sum()
+{
+	return cblas_dasum(shape().prod(), _data, 1);
 }
