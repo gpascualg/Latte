@@ -44,12 +44,13 @@ public:
 	explicit Matrix(Shape shape, DType value);
 	explicit Matrix(Shape shape, Matrix<DType>* data, bool copy = false);
 
-	virtual ~Matrix() { if (_data) free(_data); }
+	virtual ~Matrix();
 
-	inline int size() const { return _data_size; }
-	inline void reshape(Shape shape) { _m = shape.m; _n = shape.n; }
-	inline Shape shape() { return{ _m, _n }; }
-	inline Matrix<DType>* T() { return transpose<DType>(this, NULL); }
+	// Shape
+	inline int size() const;
+	inline void reshape(Shape shape);
+	inline Shape shape();
+	inline Matrix<DType>* T();
 
 	// Indexing
 	inline DType& operator()(int x, int y) { return _data[(x * _n) + y];	};
@@ -69,8 +70,8 @@ public:
 
 	void sum(Matrix<DType>* other, DType alpha = DType(1.0), DType beta = DType(1.0));
 	inline void pdiv(DType val) { pdiv(val, this); }
-	void pdiv(DType val, Matrix<DType>* result);
-	void mul(Matrix<DType>* other, Matrix<DType>* result);
+	inline void pdiv(DType val, Matrix<DType>* result);
+	inline void mul(Matrix<DType>* other, Matrix<DType>* result);
 	DType dot(Matrix<DType>* other, Matrix<DType>* result);
 
 	void exp(DType alpha = DType(1.0)) { exp(this, alpha); }
@@ -81,6 +82,10 @@ private:
 	int _data_size;
 	int _m;
 	int _n;
+
+	Matrix<DType>* _transposed_matrix;
+	CBLAS_TRANSPOSE _transpose;
+	bool _tranpose_pending;
 };
 
 
@@ -89,8 +94,11 @@ template <typename DType>
 Matrix<DType>::Matrix(int m, int n) :
 	_data((DType*)malloc(m * n * sizeof(DType))),
 	_data_size(m * n),
+	_transposed_matrix(nullptr),
 	_m(m),
-	_n(n)
+	_n(n),
+	_transpose(CblasNoTrans),
+	_tranpose_pending(false)
 {
 	memset(_data, 0, _m * _n * sizeof(DType));
 }
@@ -108,8 +116,12 @@ Matrix<DType>::Matrix(int m, int n, DType value) :
 template <typename DType>
 Matrix<DType>::Matrix(int m, int n, DType* data) :
 	_data(data),
+	_data_size(m * n),
 	_m(m),
-	_n(n)
+	_n(n),
+	_transposed_matrix(nullptr),
+	_transpose(CblasNoTrans),
+	_tranpose_pending(false)
 {}
 
 template <typename DType>
@@ -140,6 +152,59 @@ Matrix<DType>::Matrix(Shape shape, Matrix<DType>* data, bool copy) :
 		_data = data->_data;
 	}
 }
+
+template <typename DType>
+Matrix<DType>::~Matrix()
+{ 
+	if (_data)
+	{
+		free(_data);
+	}
+
+	if (_transposed_matrix)
+	{
+		free(_transposed_matrix);
+	}
+}
+
+
+// Shape
+template <typename DType>
+int Matrix<DType>::size() const
+{ 
+	return _data_size;
+}
+
+template <typename DType>
+void Matrix<DType>::reshape(Shape shape) 
+{ 
+	_m = shape.m; 
+	_n = shape.n;
+}
+
+template <typename DType>
+Shape Matrix<DType>::shape()
+{ 
+	return{ _m, _n }; 
+}
+
+template <typename DType>
+Matrix<DType>* Matrix<DType>::T()
+{
+	if (!_transposed_matrix)
+	{
+		_transposed_matrix = new Matrix<DType>(_n, _m, _data);
+	}
+
+	// Reset data, in case the matrix is reused from the pool
+	_transposed_matrix->_data = _data;
+	_transposed_matrix->_m = _n;
+	_transposed_matrix->_n = _m;
+	_transposed_matrix->_tranpose_pending = true;
+	_transposed_matrix->_transpose = CblasTrans;
+	return _transposed_matrix;
+}
+
 
 // Sum operators
 template <typename DType>
@@ -393,4 +458,20 @@ void Matrix<DType>::pdiv(DType value, Matrix<DType>* result)
 	{
 		_data[i] = value / _data[i];
 	}
+}
+
+void Matrix<float>::mul(Matrix<float>* other, Matrix<float>* result)
+{
+	int lda = _transpose == CblasNoTrans ? _n : _m;
+	int ldb = other->_transpose == CblasNoTrans ? other->_n : _n;
+
+	cblas_sgemm(CblasRowMajor, _transpose, other->_transpose, _m, other->_n, _n, 1.0f, _data, lda, other->_data, ldb, 0.0f, result->_data, other->_n);
+}
+
+void Matrix<double>::mul(Matrix<double>* other, Matrix<double>* result)
+{
+	int lda = _transpose == CblasNoTrans ? _n : _m;
+	int ldb = other->_transpose == CblasNoTrans ? other->_n : _n;
+
+	cblas_dgemm(CblasRowMajor, _transpose, other->_transpose, _m, other->_n, _n, 1.0, _data, lda, other->_data, ldb, 0.0, result->_data, other->_n);
 }
