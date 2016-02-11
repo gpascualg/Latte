@@ -9,6 +9,8 @@ set(Latte_SOURCES
     # Activations
     activations/activation.hpp
     activations/sigmoid_activation.hpp activations/sigmoid_activation.cpp
+    activations/relu_activation.hpp activations/relu_activation.cpp
+    activations/lrelu_activation.hpp activations/lrelu_activation.cpp
 
     # Fillers
     fillers/filler.hpp

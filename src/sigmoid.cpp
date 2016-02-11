@@ -20,4 +20,3 @@ template Sigmoid<double>::Sigmoid(Shape shape, int num_output);
 
 template Sigmoid<float>::Sigmoid(Shape shape, int num_output, Filler<float>* filler);
 template Sigmoid<double>::Sigmoid(Shape shape, int num_output, Filler<double>* filler);
-

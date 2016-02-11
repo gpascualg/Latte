@@ -22,12 +22,12 @@ public:
 	virtual inline void apply(Matrix<DType>* matrix, Matrix<DType>* dest) = 0;
 	virtual inline void derivative(Matrix<DType>* matrix, Matrix<DType>* dest, Matrix<DType>* alpha) = 0;
 
-	template <class AType>
-	static Activation<DType>* get()
+	template <class AType, typename... Params>
+	static Activation<DType>* get(Params... params)
 	{
 		if (!_instance)
 		{
-			_instance = new AType();
+			_instance = new AType(params...);
 		}
 
 		return _instance;
