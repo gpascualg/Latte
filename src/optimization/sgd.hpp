@@ -9,10 +9,10 @@ template <typename DType>
 class Layer;
 
 template <typename DType>
-class Linear
+class SGD
 {
 public:
-	Linear(Matrix<DType>* data, Matrix<DType>* target);
+	SGD(Matrix<DType>* data, Matrix<DType>* target);
 	
 	template <typename LType>
 	void stack(int num_output);

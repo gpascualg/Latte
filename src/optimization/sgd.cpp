@@ -1,13 +1,13 @@
-#include "linear.hpp"
-#include "matrix.hpp"
-#include "matrix_factory.hpp"
+#include "sgd.hpp"
+#include "matrix/matrix.hpp"
+#include "matrix/matrix_factory.hpp"
 
-#include "layer.hpp"
-#include "sigmoid.hpp"
+#include "layers/layer.hpp"
+#include "layers/sigmoid_layer.hpp"
 
 
 template <typename DType>
-Linear<DType>::Linear(Matrix<DType>* data, Matrix<DType>* target) :
+SGD<DType>::SGD(Matrix<DType>* data, Matrix<DType>* target) :
 	_data(data),
 	_target(target),
 	_firstLayer(nullptr),
@@ -17,7 +17,7 @@ Linear<DType>::Linear(Matrix<DType>* data, Matrix<DType>* target) :
 
 template <typename DType>
 template <typename LType>
-void Linear<DType>::stack(int num_output)
+void SGD<DType>::stack(int num_output)
 {
 	LType* layer = nullptr;
 
@@ -34,7 +34,7 @@ void Linear<DType>::stack(int num_output)
 }
 
 template <typename DType>
-void Linear<DType>::stack(Layer<DType>* layer)
+void SGD<DType>::stack(Layer<DType>* layer)
 {
 	if (!_firstLayer)
 	{
@@ -50,7 +50,7 @@ void Linear<DType>::stack(Layer<DType>* layer)
 }
 
 template <typename DType>
-void Linear<DType>::forward()
+void SGD<DType>::forward()
 {
 	auto it = _firstLayer->iterate();
 	for (; it.next(); ++it)
@@ -60,7 +60,7 @@ void Linear<DType>::forward()
 }
 
 template <typename DType>
-void Linear<DType>::backward()
+void SGD<DType>::backward()
 {
 	// Initial error
 	Matrix<DType>* predicted = _lastLayer->output();
@@ -97,17 +97,17 @@ void Linear<DType>::backward()
 
 
 // Specialization
-template Linear<float>::Linear(Matrix<float>* target, Matrix<float>* data);
-template Linear<double>::Linear(Matrix<double>* target, Matrix<double>* data);
+template SGD<float>::SGD(Matrix<float>* target, Matrix<float>* data);
+template SGD<double>::SGD(Matrix<double>* target, Matrix<double>* data);
 
-template void Linear<float>::stack<Sigmoid<float>>(int num_output);
-template void Linear<double>::stack<Sigmoid<double>>(int num_output);
+template void SGD<float>::stack<SigmoidLayer<float>>(int num_output);
+template void SGD<double>::stack<SigmoidLayer<double>>(int num_output);
 
-template void Linear<float>::stack(Layer<float>* layer);
-template void Linear<double>::stack(Layer<double>* layer);
+template void SGD<float>::stack(Layer<float>* layer);
+template void SGD<double>::stack(Layer<double>* layer);
 
-template void Linear<float>::forward();
-template void Linear<double>::forward();
+template void SGD<float>::forward();
+template void SGD<double>::forward();
 
-template void Linear<float>::backward();
-template void Linear<double>::backward();
+template void SGD<float>::backward();
+template void SGD<double>::backward();

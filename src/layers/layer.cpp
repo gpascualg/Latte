@@ -1,8 +1,8 @@
 #include "layer.hpp"
 #include "activations/activation.hpp"
 #include "fillers/filler.hpp"
-#include "matrix.hpp"
-#include "matrix_factory.hpp"
+#include "matrix/matrix.hpp"
+#include "matrix/matrix_factory.hpp"
 
 
 template <typename DType>

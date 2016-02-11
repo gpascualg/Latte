@@ -1,5 +1,5 @@
 #include "sigmoid_activation.hpp"
-#include "matrix.hpp"
+#include "matrix/matrix.hpp"
 
 template <typename DType>
 void SigmoidActivation<DType>::apply(Matrix<DType>* matrix, Matrix<DType>* dest)

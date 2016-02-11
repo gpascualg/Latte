@@ -1,5 +1,5 @@
 #include "relu_activation.hpp"
-#include "matrix.hpp"
+#include "matrix/matrix.hpp"
 
 
 template <typename DType>

@@ -2,10 +2,10 @@
 #include <iostream>
 #include <vector>
 
-#include "linear.hpp"
-#include "matrix.hpp"
-#include "matrix_factory.hpp"
-#include "sigmoid.hpp"
+#include "optimization/sgd.hpp"
+#include "matrix/matrix.hpp"
+#include "matrix/matrix_factory.hpp"
+#include "layers/sigmoid_layer.hpp"
 
 DEFINE_bool(testing, false, "Set to true to test");
 
@@ -25,17 +25,17 @@ int main(int argc, char** argv)
 	Matrix<DT> y(4, 1);
 	y(0, 0) = 0; y(1, 0) = 1; y(2, 0) = 1; y(3, 0) = 0;
 	
-	Linear<DT> linear(&x, &y);
-	linear.stack<Sigmoid<DT>>(50);
-	linear.stack<Sigmoid<DT>>(50);
-	linear.stack<Sigmoid<DT>>(50);
-	linear.stack<Sigmoid<DT>>(1);
+	SGD<DT> sgd(&x, &y);
+	sgd.stack<SigmoidLayer<DT>>(50);
+	sgd.stack<SigmoidLayer<DT>>(50);
+	sgd.stack<SigmoidLayer<DT>>(50);
+	sgd.stack<SigmoidLayer<DT>>(1);
 	
 	for (int k = 0; k < 600000; ++k)
 	{
 		// Forward net
-		linear.forward();
-		linear.backward();
+		sgd.forward();
+		sgd.backward();
 
 		// Update Matrix pool
 		MatrixFactory<DT>::get()->update();

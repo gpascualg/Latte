@@ -1,10 +1,19 @@
 set(Latte_SOURCES
     main.cpp
-    layer.hpp layer.cpp layer_iterator.cpp
-    linear.hpp linear.cpp
-    matrix.hpp matrix.cpp
-    matrix_factory.hpp matrix_factory.cpp
-    sigmoid.hpp sigmoid.cpp
+    common.hpp
+
+    # Matrix
+    matrix/matrix.hpp matrix/matrix.cpp
+    matrix/matrix_factory.hpp matrix/matrix_factory.cpp
+
+    # Optimizations
+    optimization/sgd.hpp
+    optimization/sgd.cpp
+
+    # Layers
+    layers/layer.hpp layers/layer.cpp
+    layers/sigmoid_layer.hpp layers/sigmoid_layer.cpp
+    layers/utils/layer_iterator.cpp
 
     # Activations
     activations/activation.hpp

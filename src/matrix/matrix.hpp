@@ -8,7 +8,7 @@
 
 // This should be forward declared and methods declared on a cpp
 #include "matrix_factory.hpp"
-#include "common.h"
+#include "common.hpp"
 
 
 

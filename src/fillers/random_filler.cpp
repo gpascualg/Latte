@@ -1,5 +1,5 @@
 #include "random_filler.hpp"
-#include "matrix.hpp"
+#include "matrix/matrix.hpp"
 
 template <typename DType>
 void RandomFiller<DType>::fill(Matrix<DType>* weights)

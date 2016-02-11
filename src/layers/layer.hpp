@@ -5,7 +5,7 @@
 #include <queue>
 
 // This should be forward declared and methods declared on a cpp
-#include "common.h"
+#include "common.hpp"
 
 template <typename DType>
 class Matrix;
