@@ -3,11 +3,11 @@
 #include "activation.hpp"
 
 template <typename DType>
-class LeakedReluActivation : public Activation<DType>
+class LeakyReluActivation : public Activation<DType>
 {
 public:
-	LeakedReluActivation();
-	LeakedReluActivation(DType leak);
+	LeakyReluActivation();
+	LeakyReluActivation(DType leak);
 
 private:
 	inline void apply(Matrix<DType>* matrix, Matrix<DType>* dest) override;
@@ -18,7 +18,7 @@ private:
 };
 
 template <typename DType>
-void LeakedReluActivation<DType>::apply(Matrix<DType>* matrix, Matrix<DType>* dest);
+void LeakyReluActivation<DType>::apply(Matrix<DType>* matrix, Matrix<DType>* dest);
 
 template <typename DType>
-void LeakedReluActivation<DType>::derivative(Matrix<DType>* matrix, Matrix<DType>* dest, Matrix<DType>* alpha);
+void LeakyReluActivation<DType>::derivative(Matrix<DType>* matrix, Matrix<DType>* dest, Matrix<DType>* alpha);

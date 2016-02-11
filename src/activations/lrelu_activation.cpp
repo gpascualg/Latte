@@ -3,18 +3,18 @@
 
 
 template <typename DType>
-LeakedReluActivation<DType>::LeakedReluActivation() :
-	LeakedReluActivation(DType(0.01))
+LeakyReluActivation<DType>::LeakyReluActivation() :
+	LeakyReluActivation(DType(0.01))
 {}
 
 template <typename DType>
-LeakedReluActivation<DType>::LeakedReluActivation(DType leak):
+LeakyReluActivation<DType>::LeakyReluActivation(DType leak) :
 	Activation(),
 	_leak(leak)
 {}
 
 template <typename DType>
-void LeakedReluActivation<DType>::apply(Matrix<DType>* matrix, Matrix<DType>* dest)
+void LeakyReluActivation<DType>::apply(Matrix<DType>* matrix, Matrix<DType>* dest)
 {
 	// max(0, x)
 	for (int i = 0; i < dest->shape().prod(); ++i)
@@ -24,7 +24,7 @@ void LeakedReluActivation<DType>::apply(Matrix<DType>* matrix, Matrix<DType>* de
 }
 
 template <typename DType>
-void LeakedReluActivation<DType>::derivative(Matrix<DType>* matrix, Matrix<DType>* dest, Matrix<DType>* alpha)
+void LeakyReluActivation<DType>::derivative(Matrix<DType>* matrix, Matrix<DType>* dest, Matrix<DType>* alpha)
 {
 	for (int i = 0; i < dest->shape().prod(); ++i)
 	{
@@ -34,14 +34,14 @@ void LeakedReluActivation<DType>::derivative(Matrix<DType>* matrix, Matrix<DType
 
 
 // Specialization
-template LeakedReluActivation<float>::LeakedReluActivation();
-template LeakedReluActivation<double>::LeakedReluActivation();
+template LeakyReluActivation<float>::LeakyReluActivation();
+template LeakyReluActivation<double>::LeakyReluActivation();
 
-template LeakedReluActivation<float>::LeakedReluActivation(float leak);
-template LeakedReluActivation<double>::LeakedReluActivation(double leak);
+template LeakyReluActivation<float>::LeakyReluActivation(float leak);
+template LeakyReluActivation<double>::LeakyReluActivation(double leak);
 
-template void LeakedReluActivation<float>::apply(Matrix<float>* matrix, Matrix<float>* dest);
-template void LeakedReluActivation<double>::apply(Matrix<double>* matrix, Matrix<double>* dest);
+template void LeakyReluActivation<float>::apply(Matrix<float>* matrix, Matrix<float>* dest);
+template void LeakyReluActivation<double>::apply(Matrix<double>* matrix, Matrix<double>* dest);
 
-template void LeakedReluActivation<float>::derivative(Matrix<float>* matrix, Matrix<float>* dest, Matrix<float>* alpha);
-template void LeakedReluActivation<double>::derivative(Matrix<double>* matrix, Matrix<double>* dest, Matrix<double>* alpha);
+template void LeakyReluActivation<float>::derivative(Matrix<float>* matrix, Matrix<float>* dest, Matrix<float>* alpha);
+template void LeakyReluActivation<double>::derivative(Matrix<double>* matrix, Matrix<double>* dest, Matrix<double>* alpha);
