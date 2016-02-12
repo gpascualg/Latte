@@ -51,10 +51,10 @@ Matrix<DType>* Layer<DType>::backward(Matrix<DType>* error)
 }
 
 template <typename DType>
-void Layer<DType>::update()
+void Layer<DType>::update(DType learning_rate)
 {
-	// _weights = 1.0 * _in.T * _delta + 1.0 * _weights
-	_in->T()->mul(_delta, _weights, 1.0, 1.0);
+	// _weights = learning_rate * _in.T * _delta + 1.0 * _weights
+	_in->T()->mul(_delta, _weights, learning_rate, 1.0);
 }
 
 template <typename DType> Matrix<DType>* Layer<DType>::W() { return _weights; }
@@ -72,8 +72,8 @@ template Matrix<double>* Layer<double>::forward();
 template Matrix<float>* Layer<float>::backward(Matrix<float>* error);
 template Matrix<double>* Layer<double>::backward(Matrix<double>* error);
 
-template void Layer<float>::update();
-template void Layer<double>::update();
+template void Layer<float>::update(float learning_rate);
+template void Layer<double>::update(double learning_rate);
 
 template Matrix<float>* Layer<float>::W();
 template Matrix<double>* Layer<double>::W();

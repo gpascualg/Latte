@@ -92,7 +92,7 @@ void SGD<DType>::backward()
 	it = _lastLayer->iterate();
 	for (; it.next(); --it)
 	{
-		(*it)->update();
+		(*it)->update(_learning_rate);
 	}
 }
 

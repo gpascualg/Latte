@@ -52,7 +52,7 @@ public:
 
 	virtual Matrix<DType>* forward();
 	virtual Matrix<DType>* backward(Matrix<DType>* error);
-	virtual void update();
+	virtual void update(DType learning_rate);
 
 	inline Matrix<DType>* W();
 	inline Shape inShape();
