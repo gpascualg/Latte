@@ -3,7 +3,8 @@
 SET(gflags_LOCAL_DIR ${PROJECT_SOURCE_DIR}/dep/gflags)
 if(EXISTS "${gflags_LOCAL_DIR}" AND IS_DIRECTORY "${gflags_LOCAL_DIR}" AND NOT USE_GLOBAL_GFLAGS)
     execute_process(COMMAND
-        git apply --whitespace=fix --directory=${gflags_LOCAL_DIR} ${PROJECT_SOURCE_DIR}/cmake/Patches/gflags-submodule.patch
+        git apply --whitespace=fix ../../cmake/Patches/gflags-submodule.patch
+	WORKIND_DIRECTORY ${PROJECT_SOURCE_DIR}/dep/gflags
         OUTPUT_QUIET
         ERROR_QUIET)
 
@@ -16,9 +17,10 @@ endif()
 SET(OpenBLAS_LOCAL_DIR ${PROJECT_SOURCE_DIR}/dep/OpenBLAS)
 if(EXISTS "${OpenBLAS_LOCAL_DIR}" AND IS_DIRECTORY "${OpenBLAS_LOCAL_DIR}" AND NOT USE_GLOBAL_BLAS)
     execute_process(COMMAND
-        git apply --whitespace=fix --directory=${OpenBLAS_LOCAL_DIR} ${PROJECT_SOURCE_DIR}/cmake/Patches/openblas-submodule.patch
-        OUTPUT_QUIET
-        ERROR_QUIET)
+        git apply --whitespace=fix ../../cmake/Patches/openblas-submodule.patch
+	WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/dep/OpenBLAS
+	OUTPUT_QUIET
+	ERROR_QUIET)
 
     add_subdirectory(dep/OpenBLAS)
     include_directories(dep/OpenBLAS)
