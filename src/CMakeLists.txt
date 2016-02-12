@@ -30,5 +30,11 @@ set(Latte_SOURCES
     fillers/random_filler.hpp fillers/random_filler.cpp
 )
 
+if(MSVC)
+    set(gflags_LIB gflags)
+else()
+    set(gflags_LIB )
+endif()
+
 add_executable(Latte ${Latte_SOURCES})
-target_link_libraries(Latte gflags ${OpenBLAS_LIBNAME})
+target_link_libraries(Latte ${gflags_LIB} ${OpenBLAS_LIBNAME})

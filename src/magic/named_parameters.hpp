@@ -8,18 +8,6 @@
 #include <utility>
 #include <string>
 
-template<std::size_t I = 0, typename... Tp>
-inline typename std::enable_if<I == sizeof...(Tp), void>::type
-print(std::tuple<Tp...>& t)
-{ }
-
-template<std::size_t I = 0, typename... Tp>
-inline typename std::enable_if<I < sizeof...(Tp), void>::type
-	print(std::tuple<Tp...>& t)
-{
-	std::cout << std::get<I>(t) << std::endl;
-	print<I + 1, Tp...>(t);
-}
 
 template <typename T>
 class Parameter;
