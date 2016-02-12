@@ -14,7 +14,7 @@ DEFINE_bool(testing, false, "Set to true to test");
 int main(int argc, char** argv)
 {
 	gflags::ParseCommandLineFlags(&argc, &argv, true);
-	srand(time(NULL));
+	srand((unsigned int)time(NULL));
 
 	Matrix<DT> x(4, 3);
 	x(0, 0) = 0; x(0, 1) = 0; x(0, 2) = 1;
@@ -25,7 +25,7 @@ int main(int argc, char** argv)
 	Matrix<DT> y(4, 1);
 	y(0, 0) = 0; y(1, 0) = 1; y(2, 0) = 1; y(3, 0) = 0;
 	
-	SGD<DT> sgd(&x, &y);
+	SGD<DT> sgd{ SGDConfig<DT>::data = &x, SGDConfig<DT>::target = &y };
 	sgd.stack<SigmoidLayer<DT>>(50);
 	sgd.stack<SigmoidLayer<DT>>(50);
 	sgd.stack<SigmoidLayer<DT>>(50);

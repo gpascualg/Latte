@@ -7,9 +7,11 @@
 
 
 template <typename DType>
-SGD<DType>::SGD(Matrix<DType>* data, Matrix<DType>* target) :
-	_data(data),
-	_target(target),
+SGD<DType>::SGD(GenericParameter* data, GenericParameter* target, GenericParameter* learning_rate, GenericParameter* momentum) :
+	_data(data->as<Matrix<DType>*>()),
+	_target(target->as<Matrix<DType>*>()),
+	_learning_rate(learning_rate->as<DType>()),
+	_momentum(momentum->as<DType>()),
 	_firstLayer(nullptr),
 	_lastLayer(nullptr),
 	_k(0)
@@ -23,11 +25,11 @@ void SGD<DType>::stack(int num_output)
 
 	if (!_firstLayer)
 	{
-		layer = new LType(_data->shape(), num_output);
+		layer = new LType{ LayerConfig<DType>::shape = _data->shape(), LayerConfig<DType>::num_output = num_output };
 	}
 	else
 	{
-		layer = new LType(_lastLayer->outShape(), num_output);
+		layer = new LType{ LayerConfig<DType>::shape = _lastLayer->outShape(), LayerConfig<DType>::num_output = num_output };
 	}
 
 	stack(layer);
@@ -97,8 +99,8 @@ void SGD<DType>::backward()
 
 
 // Specialization
-template SGD<float>::SGD(Matrix<float>* target, Matrix<float>* data);
-template SGD<double>::SGD(Matrix<double>* target, Matrix<double>* data);
+template SGD<float>::SGD(GenericParameter* data, GenericParameter* target, GenericParameter* learning_rate, GenericParameter* momentum);
+template SGD<double>::SGD(GenericParameter* data, GenericParameter* target, GenericParameter* learning_rate, GenericParameter* momentum);
 
 template void SGD<float>::stack<SigmoidLayer<float>>(int num_output);
 template void SGD<double>::stack<SigmoidLayer<double>>(int num_output);

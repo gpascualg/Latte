@@ -2,18 +2,22 @@ set(Latte_SOURCES
     main.cpp
     common.hpp
 
+    # Magic
+    magic/named_parameters.hpp
+
     # Matrix
     matrix/matrix.hpp matrix/matrix.cpp
     matrix/matrix_factory.hpp matrix/matrix_factory.cpp
 
     # Optimizations
-    optimization/sgd.hpp
-    optimization/sgd.cpp
+    optimization/sgd.hpp optimization/sgd.cpp
+    optimization/utils/sgd_config.hpp
 
     # Layers
     layers/layer.hpp layers/layer.cpp
     layers/sigmoid_layer.hpp layers/sigmoid_layer.cpp
     layers/utils/layer_iterator.cpp
+    layers/utils/layer_config.hpp
 
     # Activations
     activations/activation.hpp
