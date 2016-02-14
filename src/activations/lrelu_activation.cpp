@@ -1,6 +1,11 @@
 #include "lrelu_activation.hpp"
 #include "matrix/matrix.hpp"
 
+#ifdef max
+	#undef max
+	#undef min
+#endif
+
 
 template <typename DType>
 LeakyReluActivation<DType>::LeakyReluActivation() :

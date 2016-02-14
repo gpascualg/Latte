@@ -70,7 +70,7 @@ public:
 	inline void operator+=(Matrix<DType>& value);
 	inline void operator-=(DType value);
 	inline void operator-=(Matrix<DType>& value);
-	inline DType sum();
+	DType sum();
 
 	// Mult
 	inline void operator*=(DType value);
@@ -79,9 +79,9 @@ public:
 	inline void operator/=(Matrix<DType>& value);
 
 	void sum(Matrix<DType>* other, DType alpha = DType(1.0), DType beta = DType(1.0));
-	inline void pdiv(DType val) { pdiv(val, this); }
-	inline void pdiv(DType val, Matrix<DType>* result);
-	inline void mul(Matrix<DType>* other, Matrix<DType>* result, DType alpha = DType(1.0), DType beta = DType(0.0));
+	void pdiv(DType val) { pdiv(val, this); }
+	void pdiv(DType val, Matrix<DType>* result);
+	void mul(Matrix<DType>* other, Matrix<DType>* result, DType alpha = DType(1.0), DType beta = DType(0.0));
 	DType dot(Matrix<DType>* other, Matrix<DType>* result);
 
 	void exp(DType alpha = DType(1.0)) { exp(this, alpha); }

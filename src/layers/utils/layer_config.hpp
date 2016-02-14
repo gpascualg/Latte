@@ -20,6 +20,7 @@ struct LayerConfig
 	static Parameter<Filler<DType>*> filler;
 };
 
+#ifndef _MSC_VER
 template <> Parameter<Shape> LayerConfig<float>::shape;
 template <> Parameter<Shape> LayerConfig<double>::shape;
 
@@ -31,3 +32,4 @@ template <> Parameter<Activation<double>*> LayerConfig<double>::activation;
 
 template <> Parameter<Filler<float>*> LayerConfig<float>::filler;
 template <> Parameter<Filler<double>*> LayerConfig<double>::filler;
+#endif

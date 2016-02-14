@@ -1,6 +1,11 @@
 #include "relu_activation.hpp"
 #include "matrix/matrix.hpp"
+#include "common.hpp"
 
+#ifdef max
+	#undef max
+	#undef min
+#endif
 
 template <typename DType>
 void ReluActivation<DType>::apply(Matrix<DType>* matrix, Matrix<DType>* dest)

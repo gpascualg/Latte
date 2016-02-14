@@ -24,7 +24,7 @@ public:
     }
 
 	template <typename T>
-	T as()
+	T as(bool clean = true)
 	{
         if (!_required)
         {
@@ -34,13 +34,18 @@ public:
         {
             std::cout << "\tReached with opt=" << std::boolalpha << _optional << " & req=" << std::boolalpha << _required << std::endl;
         }
+
+		if (_required && _optional)
+		{
+			std::cout << "ERR" << std::endl;
+		}
         
         std::cout << "\tAddr=" << std::hex << this << std::endl;
 		assert(!_required && "Required default parameter not found");
 		T value = ((Parameter<T>*)this)->Value;
 
-		// If _required, we should never reach this point
-		if (_optional || _required)
+		// Clean up, we always create pointers (THIS MEANS WE CAN NOT REUSE!)
+		if (clean)
 		{
 			delete this;
 		}
@@ -67,15 +72,15 @@ public:
 		return new Parameter<T>("__optional__", value, true);
 	}
 
-	Parameter<T> operator=(T value)
+	Parameter<T>* operator=(T value)
 	{
         std::cout << "Overloaded " << Name << "=" << std::endl;
-		return Parameter<T>(Name, value);
+		return new Parameter<T>(Name, value);
 	}
 
 private:
 	Parameter(std::string name, T value) :
-		GenericParameter(),
+		GenericParameter(false, false),
         Name(name), Value(value)
 	{}
 
@@ -89,8 +94,11 @@ public:
 	T Value;
 };
 
+template<typename... Tp>
+struct sizeof_pack___ { static const std::size_t value = sizeof...(Tp); };
+
 template<std::size_t I = 0, typename D, typename... Tp>
-typename std::enable_if<I == sizeof...(Tp), GenericParameter*>::type
+typename std::enable_if<I == sizeof_pack___<Tp...>::value, GenericParameter*>::type
     eval(std::string name, std::tuple<Tp...> tpl, const bool required, D def)
 {
     std::cout << "Failed at looking for " << name << " was req=" << required << std::endl;
@@ -107,14 +115,14 @@ typename std::enable_if<I == sizeof...(Tp), GenericParameter*>::type
 }
 
 template<std::size_t I = 0, typename D, typename... Tp>
-typename std::enable_if<I < sizeof...(Tp), GenericParameter*>::type
+typename std::enable_if<I < sizeof_pack___<Tp...>::value, GenericParameter*>::type
     eval(std::string name, std::tuple<Tp...> tpl, const bool required, D def)
 {
-    std::cout << "I=" << I << std::endl;
-    if (std::get<I>(tpl).Name == name)
+    std::cout << "I=" << I << " (" << name << ")" << std::endl;
+    if (std::get<I>(tpl)->Name == name)
     {
         std::cout << "Found " << name << std::endl;
-        return (GenericParameter*)&std::get<I>(tpl);
+        return (GenericParameter*)std::get<I>(tpl);
     }
     return eval<I + 1, D, Tp...>(name, tpl, required, def);
 }

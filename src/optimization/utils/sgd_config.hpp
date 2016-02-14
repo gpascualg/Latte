@@ -15,6 +15,7 @@ struct SGDConfig
 	static Parameter<DType> momentum;
 };
 
+#ifndef _MSC_VER
 template <> Parameter<Matrix<float>*> SGDConfig<float>::data;
 template <> Parameter<Matrix<double>*> SGDConfig<double>::data;
 
@@ -26,3 +27,4 @@ template <> Parameter<double> SGDConfig<double>::learning_rate;
 
 template <> Parameter<float> SGDConfig<float>::momentum;
 template <> Parameter<double> SGDConfig<double>::momentum;
+#endif
