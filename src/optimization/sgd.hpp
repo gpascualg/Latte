@@ -15,7 +15,7 @@ class SGD
 {
 public:
 	SGD(GenericParameter* data, GenericParameter* target, GenericParameter* learning_rate, GenericParameter* momentum);
-	template <typename... Args> SGD(Args... args):
+	template <typename... Args> SGD(NamedArguments_t, Args... args):
 		SGD{ ARG_REQUIRED(data), ARG_REQUIRED(target), ARG_OPTIONAL(learning_rate, DType(0.01)), ARG_OPTIONAL(momentum, DType(0.0)) }
 	{}
 	
@@ -27,12 +27,12 @@ public:
 	void backward();
 
 private:
-	int _k;
-	Layer<DType>* _firstLayer;
-	Layer<DType>* _lastLayer;
-
 	Matrix<DType>* _data;
 	Matrix<DType>* _target;
 	DType _learning_rate;
 	DType _momentum;
+    
+	Layer<DType>* _firstLayer;
+	Layer<DType>* _lastLayer;
+    int _k;
 };

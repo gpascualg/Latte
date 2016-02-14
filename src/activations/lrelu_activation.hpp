@@ -9,16 +9,13 @@ public:
 	LeakyReluActivation();
 	LeakyReluActivation(DType leak);
 
+public:
+    static std::string FactoryName() { return "LeakyReLU"; }
+
 private:
-	inline void apply(Matrix<DType>* matrix, Matrix<DType>* dest) override;
-	inline void derivative(Matrix<DType>* matrix, Matrix<DType>* dest, Matrix<DType>* alpha) override;
+	void apply(Matrix<DType>* matrix, Matrix<DType>* dest) override;
+	void derivative(Matrix<DType>* matrix, Matrix<DType>* dest, Matrix<DType>* alpha) override;
 
 private:
 	DType _leak;
 };
-
-template <typename DType>
-void LeakyReluActivation<DType>::apply(Matrix<DType>* matrix, Matrix<DType>* dest);
-
-template <typename DType>
-void LeakyReluActivation<DType>::derivative(Matrix<DType>* matrix, Matrix<DType>* dest, Matrix<DType>* alpha);

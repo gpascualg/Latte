@@ -15,14 +15,14 @@ struct SGDConfig
 	static Parameter<DType> momentum;
 };
 
-Parameter<Matrix<float>*> SGDConfig<float>::data("data");
-Parameter<Matrix<double>*> SGDConfig<double>::data("data");
+template <> Parameter<Matrix<float>*> SGDConfig<float>::data;
+template <> Parameter<Matrix<double>*> SGDConfig<double>::data;
 
-Parameter<Matrix<float>*> SGDConfig<float>::target("target");
-Parameter<Matrix<double>*> SGDConfig<double>::target("target");
+template <> Parameter<Matrix<float>*> SGDConfig<float>::target;
+template <> Parameter<Matrix<double>*> SGDConfig<double>::target;
 
-Parameter<float> SGDConfig<float>::learning_rate("learning_rate");
-Parameter<double> SGDConfig<double>::learning_rate("learning_rate");
+template <> Parameter<float> SGDConfig<float>::learning_rate;
+template <> Parameter<double> SGDConfig<double>::learning_rate;
 
-Parameter<float> SGDConfig<float>::momentum("momentum");
-Parameter<double> SGDConfig<double>::momentum("momentum");
+template <> Parameter<float> SGDConfig<float>::momentum;
+template <> Parameter<double> SGDConfig<double>::momentum;

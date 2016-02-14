@@ -34,11 +34,11 @@ public:
 		LayerIterator(Layer<DType>* layer);
 
 	public:
-		inline void operator++();
-		inline void operator--();
-		inline Layer<DType>* operator*();
-		inline bool next();
-		inline Layer<DType>* last();
+		void operator++();
+		void operator--();
+		Layer<DType>* operator*();
+		bool next();
+		Layer<DType>* last();
 
 	private:
 		Layer<DType>* _current;
@@ -54,14 +54,14 @@ public:
 	virtual Matrix<DType>* backward(Matrix<DType>* error);
 	virtual void update(DType learning_rate);
 
-	inline Matrix<DType>* W();
-	inline Shape inShape();
-	inline Shape outShape();
+	inline Matrix<DType>* W() { return _weights; }
+	inline Shape inShape() { return _in_shape; }
+	inline Shape outShape() { return _out_shape; }
 	inline Matrix<DType>* output() { return _output; }
 	
-	inline void connect(Layer<DType>* layer) { layer->_next.push_back(this); _previous.push_back(layer); _in = layer->_output; }
-	inline void connect(Matrix<DType>* data) { _in = data; }
-	inline LayerIterator iterate() { return LayerIterator(this); }
+	void connect(Layer<DType>* layer);
+	void connect(Matrix<DType>* data);
+	LayerIterator iterate();
 
 protected:
 	Activation<DType>* _activaton;
@@ -79,14 +79,3 @@ protected:
 	Shape _out_shape;
 };
 
-template <typename DType> Matrix<DType>* Layer<DType>::W();
-template <typename DType> Shape Layer<DType>::inShape();
-template <typename DType> Shape Layer<DType>::outShape();
-
-/*
-template <typename DType> void Layer<DType>::LayerIterator::operator++();
-template <typename DType> void Layer<DType>::LayerIterator::operator--();
-template <typename DType> Layer<DType>* Layer<DType>::LayerIterator::operator*();
-template <typename DType> bool Layer<DType>::LayerIterator::next();
-template <typename DType> Layer<DType>* Layer<DType>::LayerIterator::last();
-*/

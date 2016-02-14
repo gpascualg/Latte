@@ -25,11 +25,11 @@ void SGD<DType>::stack(int num_output)
 
 	if (!_firstLayer)
 	{
-		layer = new LType{ LayerConfig<DType>::shape = _data->shape(), LayerConfig<DType>::num_output = num_output };
+		layer = new LType{ NamedArguments, LayerConfig<DType>::shape = _data->shape(), LayerConfig<DType>::num_output = num_output };
 	}
 	else
 	{
-		layer = new LType{ LayerConfig<DType>::shape = _lastLayer->outShape(), LayerConfig<DType>::num_output = num_output };
+		layer = new LType{ NamedArguments, LayerConfig<DType>::shape = _lastLayer->outShape(), LayerConfig<DType>::num_output = num_output };
 	}
 
 	stack(layer);

@@ -57,9 +57,25 @@ void Layer<DType>::update(DType learning_rate)
 	_in->T()->mul(_delta, _weights, learning_rate, 1.0);
 }
 
-template <typename DType> Matrix<DType>* Layer<DType>::W() { return _weights; }
-template <typename DType> Shape Layer<DType>::inShape() { return _in_shape; }
-template <typename DType> Shape Layer<DType>::outShape() { return _out_shape; }
+template <typename DType>
+void Layer<DType>::connect(Layer<DType>* layer)
+{ 
+    layer->_next.push_back(this);
+    _previous.push_back(layer);
+    _in = layer->_output;
+}
+
+template <typename DType>
+void Layer<DType>::connect(Matrix<DType>* data)
+{ 
+    _in = data; 
+}
+
+template <typename DType>
+typename Layer<DType>::LayerIterator Layer<DType>::iterate()
+{ 
+    return LayerIterator(this); 
+}
 
 
 // Specializations
@@ -75,11 +91,11 @@ template Matrix<double>* Layer<double>::backward(Matrix<double>* error);
 template void Layer<float>::update(float learning_rate);
 template void Layer<double>::update(double learning_rate);
 
-template Matrix<float>* Layer<float>::W();
-template Matrix<double>* Layer<double>::W();
+template void Layer<float>::connect(Layer<float>* layer);
+template void Layer<double>::connect(Layer<double>* layer);
 
-template Shape Layer<float>::inShape();
-template Shape Layer<double>::inShape();
+template void Layer<float>::connect(Matrix<float>* data);
+template void Layer<double>::connect(Matrix<double>* data);
 
-template Shape Layer<float>::outShape();
-template Shape Layer<double>::outShape();
+template Layer<float>::LayerIterator Layer<float>::iterate();
+template Layer<double>::LayerIterator Layer<double>::iterate();

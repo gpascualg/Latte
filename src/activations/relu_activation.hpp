@@ -5,13 +5,10 @@
 template <typename DType>
 class ReluActivation : public Activation<DType>
 {
+public:
+    static std::string FactoryName() { return "ReLU"; }
+
 private:
-	inline void apply(Matrix<DType>* matrix, Matrix<DType>* dest) override;
-	inline void derivative(Matrix<DType>* matrix, Matrix<DType>* dest, Matrix<DType>* alpha) override;
+	void apply(Matrix<DType>* matrix, Matrix<DType>* dest) override;
+	void derivative(Matrix<DType>* matrix, Matrix<DType>* dest, Matrix<DType>* alpha) override;
 };
-
-template <typename DType>
-void ReluActivation<DType>::apply(Matrix<DType>* matrix, Matrix<DType>* dest);
-
-template <typename DType>
-void ReluActivation<DType>::derivative(Matrix<DType>* matrix, Matrix<DType>* dest, Matrix<DType>* alpha);

@@ -9,7 +9,7 @@ LeakyReluActivation<DType>::LeakyReluActivation() :
 
 template <typename DType>
 LeakyReluActivation<DType>::LeakyReluActivation(DType leak) :
-	Activation(),
+	Activation<DType>(),
 	_leak(leak)
 {}
 
@@ -19,7 +19,7 @@ void LeakyReluActivation<DType>::apply(Matrix<DType>* matrix, Matrix<DType>* des
 	// max(0, x)
 	for (int i = 0; i < dest->shape().prod(); ++i)
 	{
-		(*dest)[i] = max(0, (*matrix)[i]) + min((*matrix)[i], 0) * _leak;
+		(*dest)[i] = std::max(DType(0.0), (*matrix)[i]) + std::min((*matrix)[i], DType(0.0)) * _leak;
 	}
 }
 

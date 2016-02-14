@@ -9,6 +9,7 @@ if(EXISTS "${gflags_LOCAL_DIR}" AND IS_DIRECTORY "${gflags_LOCAL_DIR}" AND NOT U
         ERROR_QUIET)
 
     add_subdirectory(dep/gflags)
+    include_directories(${PROJECT_BINARY_DIR}/dep/gflags/include)
 else()
     find_package(gflags)
 endif()
@@ -24,12 +25,12 @@ if(EXISTS "${OpenBLAS_LOCAL_DIR}" AND IS_DIRECTORY "${OpenBLAS_LOCAL_DIR}" AND N
 
     add_subdirectory(dep/OpenBLAS)
     include_directories(dep/OpenBLAS)
-
-    if(MSVC)
-        set(OpenBLAS_LIBNAME libopenblas CACHE INTERNAL "OpenBLAS Library name")
-    else()
-        set(OpenBLAS_LIBNAME openblas CACHE INTERNAL "OpenBLAS Library name")
-    endif()
 else()
     find_package(OpenBLAS)
+endif()
+
+if(MSVC)
+    set(OpenBLAS_LIBNAME libopenblas CACHE INTERNAL "OpenBLAS Library name")
+else()
+    set(OpenBLAS_LIBNAME openblas_static CACHE INTERNAL "OpenBLAS Library name")
 endif()

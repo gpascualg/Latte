@@ -8,7 +8,7 @@ void ReluActivation<DType>::apply(Matrix<DType>* matrix, Matrix<DType>* dest)
 	// max(0, x)
 	for (int i = 0; i < dest->shape().prod(); ++i)
 	{
-		(*dest)[i] = max(0, (*matrix)[i]);
+		(*dest)[i] = std::max(DType(0.0), (*matrix)[i]);
 	}
 }
 

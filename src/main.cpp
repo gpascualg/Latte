@@ -7,6 +7,7 @@
 #include "matrix/matrix_factory.hpp"
 #include "layers/sigmoid_layer.hpp"
 
+
 DEFINE_bool(testing, false, "Set to true to test");
 
 #define DT float
@@ -25,7 +26,7 @@ int main(int argc, char** argv)
 	Matrix<DT> y(4, 1);
 	y(0, 0) = 0; y(1, 0) = 1; y(2, 0) = 1; y(3, 0) = 0;
 	
-	SGD<DT> sgd{ SGDConfig<DT>::data = &x, SGDConfig<DT>::target = &y, SGDConfig<DT>::learning_rate = 1 };
+	SGD<DT> sgd{ NamedArguments, SGDConfig<DT>::data = &x, SGDConfig<DT>::target = &y, SGDConfig<DT>::learning_rate = 1 };
 	sgd.stack<SigmoidLayer<DT>>(50);
 	sgd.stack<SigmoidLayer<DT>>(50);
 	sgd.stack<SigmoidLayer<DT>>(50);
