@@ -84,5 +84,5 @@ std::unordered_map<std::string, BaseType*> Factory<BaseType>::_instances;
             return get ## BaseType ## _t<DType, SubType>::_(params...); \
         }
     
-    #define FromFactory(BaseType, SubType, DType) get ## BaseType<DType, SubType<DType>>()
+    #define FromFactory(BaseType, SubType, DType) get ## BaseType<DType, SubType<DType>>
 #endif

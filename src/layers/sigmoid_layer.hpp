@@ -17,6 +17,6 @@ class SigmoidLayer : public Layer<DType>
 public:
 	SigmoidLayer(GenericParameter* shape, GenericParameter* num_output, GenericParameter* filler);
 	template <typename... Args> SigmoidLayer(NamedArguments_t, Args... args) :
-		SigmoidLayer{ ARG_REQUIRED(shape), ARG_REQUIRED(num_output), ARG_OPTIONAL(filler, (FromFactory(Filler, RandomFiller, DType))) }
+		SigmoidLayer{ ARG_REQUIRED(shape), ARG_REQUIRED(num_output), ARG_OPTIONAL(filler, FromFactory(Filler, RandomFiller, DType)()) }
 	{}
 };

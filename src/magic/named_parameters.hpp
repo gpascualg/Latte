@@ -19,11 +19,23 @@ public:
 	GenericParameter(bool required = false, bool optional = false) :
 		_required(required),
 		_optional(optional)
-	{}
+	{
+        std::cout << "GenericParameter opt=" << optional << " req=" << required << std::endl;
+    }
 
 	template <typename T>
 	T as()
 	{
+        if (!_required)
+        {
+            std::cout << "\tReached as " << ((Parameter<T>*)this)->Name << "  with opt=" << std::boolalpha << _optional << std::endl;
+        }
+        else
+        {
+            std::cout << "\tReached with opt=" << std::boolalpha << _optional << " & req=" << std::boolalpha << _required << std::endl;
+        }
+        
+        std::cout << "\tAddr=" << std::hex << this << std::endl;
 		assert(!_required && "Required default parameter not found");
 		T value = ((Parameter<T>*)this)->Value;
 
@@ -52,11 +64,12 @@ public:
 
 	static Parameter<T>* make_optional(T value)
 	{
-		return new Parameter<T>("", value, true);
+		return new Parameter<T>("__optional__", value, true);
 	}
 
 	Parameter<T> operator=(T value)
 	{
+        std::cout << "Overloaded " << Name << "=" << std::endl;
 		return Parameter<T>(Name, value);
 	}
 
@@ -80,29 +93,29 @@ template<std::size_t I = 0, typename D, typename... Tp>
 typename std::enable_if<I == sizeof...(Tp), GenericParameter*>::type
     eval(std::string name, std::tuple<Tp...> tpl, const bool required, D def)
 {
+    std::cout << "Failed at looking for " << name << " was req=" << required << std::endl;
+    
     if (required)
     {
         return new GenericParameter(true);
     }
 
-    return Parameter<D>::make_optional(def);
+    auto opt = Parameter<D>::make_optional(def);
+    std::cout << "Optional name: " << opt->Name << std::endl;
+    std::cout << "\tAddr=" << std::hex << opt << std::endl;
+    return (GenericParameter*)opt;
 }
 
 template<std::size_t I = 0, typename D, typename... Tp>
 typename std::enable_if<I < sizeof...(Tp), GenericParameter*>::type
     eval(std::string name, std::tuple<Tp...> tpl, const bool required, D def)
 {
-    if (std::get<I>(tpl).Name == name) return &std::get<I>(tpl);
-    return eval<I + 1, D, Tp...>(name, tpl, required, def);
-}
-
-template<std::size_t I = 0, typename D, typename... Tp>
-typename std::enable_if<I < sizeof...(Tp), GenericParameter*>::type
-    eval(const char* cname, std::tuple<Tp...> tpl, const bool required, D def)
-{
-    std::string name(cname);
-    
-    if (std::get<I>(tpl).Name == name) return &std::get<I>(tpl);
+    std::cout << "I=" << I << std::endl;
+    if (std::get<I>(tpl).Name == name)
+    {
+        std::cout << "Found " << name << std::endl;
+        return (GenericParameter*)&std::get<I>(tpl);
+    }
     return eval<I + 1, D, Tp...>(name, tpl, required, def);
 }
 
@@ -112,10 +125,10 @@ typename std::enable_if<I < sizeof...(Tp), GenericParameter*>::type
 #define PARAMETER_(param, tpl, rq, def)		eval(STR_(param), tpl, rq, def)
 
 #define NAMED_REQUIRED(param, args)			PARAMETER_(param, TPL(args), true, nullptr)
-#define NAMED_OPTIONAL(param, args, def)	PARAMETER_(param, TPL(args), false, def)
+#define NAMED_OPTIONAL(param, args, def)	PARAMETER_(param, TPL(args), false, (def))
 
 #define ARG_REQUIRED(param)					PARAMETER_(param, TPL(args), true, nullptr)
-#define ARG_OPTIONAL(param, def)			PARAMETER_(param, TPL(args), false, def)
+#define ARG_OPTIONAL(param, def)			PARAMETER_(param, TPL(args), false, (def))
 
 struct NamedArguments_t {};
 #define NamedArguments NamedArguments_t{}
