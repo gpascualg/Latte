@@ -1,46 +1,9 @@
 #pragma once
 
-#include <unordered_map>
-#include <string>
-
+#include "magic/factory.hpp"
 
 template <typename DType>
 class Matrix;
-
-
-template <class BaseType>
-class Factory
-{
-public:
-    class Register
-    {
-    public:
-        template <class SubType, typename... Params>
-        static BaseType* get(Params... params)
-        {
-            auto it = _instances.find(SubType::FactoryName());
-            BaseType* instance = nullptr;
-            
-            if (it == _instances.end())
-            {
-                instance = new SubType(params...);
-                _instances.insert(std::make_pair(SubType::FactoryName(), instance));
-            }
-            else
-            {
-                instance = it->second;
-            }
-            
-            return instance;
-        }
-    };
-    
-private:
-    static std::unordered_map<std::string, BaseType*> _instances;
-};
-
-template <class BaseType>
-std::unordered_map<std::string, BaseType*> Factory<BaseType>::_instances;
 
 
 template <typename DType>
@@ -63,3 +26,5 @@ public:
 protected:
 	Activation() {};
 };
+
+REGISTER_FACTORY(Activation);
