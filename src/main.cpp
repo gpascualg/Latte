@@ -6,6 +6,7 @@
 #include "matrix/matrix.hpp"
 #include "matrix/matrix_factory.hpp"
 #include "layers/sigmoid_layer.hpp"
+#include "layers/dense_layer.hpp"
 
 
 DEFINE_bool(testing, false, "Set to true to test");
@@ -27,11 +28,14 @@ int main(int argc, char** argv)
 	y(0, 0) = 0; y(1, 0) = 1; y(2, 0) = 1; y(3, 0) = 0;
 	
 	SGD<DT> sgd{ NamedArguments, SGDConfig<DT>::data = &x, SGDConfig<DT>::target = &y, SGDConfig<DT>::learning_rate = 1 };
-	//sgd.stack<SigmoidLayer<DT>>(50);
-	//sgd.stack<SigmoidLayer<DT>>(50);
-	//sgd.stack<SigmoidLayer<DT>>(50);
-	//sgd.stack<SigmoidLayer<DT>>(1);
-    
+
+#define VERSION 3
+#if VERSION == 1
+	sgd.stack<SigmoidLayer<DT>>(50);
+	sgd.stack<SigmoidLayer<DT>>(50);
+	sgd.stack<SigmoidLayer<DT>>(50);
+	sgd.stack<SigmoidLayer<DT>>(1);
+#elif VERSION == 2
     auto sigmoid_L1 = new SigmoidLayer<DT>{ NamedArguments, LayerConfig<DT>::shape = x.shape(), 
         LayerConfig<DT>::num_output = 50 };
     auto sigmoid_L2 = new SigmoidLayer<DT>{ NamedArguments, LayerConfig<DT>::shape = sigmoid_L1->outShape(), 
@@ -45,7 +49,19 @@ int main(int argc, char** argv)
     sgd.stack(sigmoid_L2);
     sgd.stack(sigmoid_L3);
     sgd.stack(sigmoid_L4);
-	
+#elif VERSION == 3
+	auto sigmoid_L1 = new DenseLayer<DT>{ NamedArguments, LayerConfig<DT>::shape = x.shape(),
+		LayerConfig<DT>::num_output = 50 };
+	auto sigmoid_L12 = new DenseLayer<DT>{ NamedArguments, LayerConfig<DT>::shape = sigmoid_L1->outShape(),
+		LayerConfig<DT>::num_output = 50 };
+	auto sigmoid_L2 = new SigmoidLayer<DT>{ NamedArguments, LayerConfig<DT>::shape = sigmoid_L12->outShape(),
+		LayerConfig<DT>::num_output = 1, LayerConfig<DT>::bias = NoBias<DT>() };
+
+	sgd.stack(sigmoid_L1);
+	sgd.stack(sigmoid_L12);
+	sgd.stack(sigmoid_L2);
+#endif
+
 	for (int k = 0; k < 600000; ++k)
 	{
 		// Forward net

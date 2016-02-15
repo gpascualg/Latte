@@ -5,6 +5,7 @@
 
 // This should be forward declared and methods declared on a cpp
 #include "common.hpp"
+#include "fillers/random_filler.hpp"
 
 template <typename DType>
 struct LayerConfig
@@ -21,6 +22,12 @@ template <typename DType>
 inline BiasConfig<DType> NoBias()
 {
 	return BiasConfig<DType>{false, 0, nullptr};
+}
+
+template <typename DType>
+inline BiasConfig<DType> DefaultBias()
+{
+	return BiasConfig<DType>{true, 1, FromFactory(Filler, RandomFiller, DType)()};
 }
 
 #if !Latte_COMPILER_IS_MSVC

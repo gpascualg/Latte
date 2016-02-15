@@ -10,7 +10,8 @@ SigmoidLayer<DType>::SigmoidLayer(GenericParameter* shape, GenericParameter* num
 	Layer<DType>(
         shape->as<Shape>(), 
         num_output->as<int>(), 
-        FromFactory(Activation, SigmoidActivation, DType)(), filler->as<Filler<DType>*>(),
+        FromFactory(Activation, SigmoidActivation, DType)(), 
+		filler->as<Filler<DType>*>(),
         dropout_ratio->as<DType>(),
         bias->as<BiasConfig<DType>>()
     )

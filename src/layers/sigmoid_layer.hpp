@@ -22,8 +22,8 @@ public:
             ARG_REQUIRED(shape), 
             ARG_REQUIRED(num_output), 
             ARG_OPTIONAL(filler, FromFactory(Filler, RandomFiller, DType)()),
-            ARG_OPTIONAL(dropout_ratio, DType(0.0)) ,
-            ARG_OPTIONAL(bias, (BiasConfig<DType>{true, 1, FromFactory(Filler, RandomFiller, DType)()}))
+            ARG_OPTIONAL(dropout_ratio, DType(0.0)),
+            ARG_OPTIONAL(bias, DefaultBias<DType>())
         }
 	{}
 };
