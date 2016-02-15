@@ -11,3 +11,6 @@ template <> Parameter<Activation<double>*> LayerConfig<double>::activation("acti
 
 template <> Parameter<Filler<float>*> LayerConfig<float>::filler("filler");
 template <> Parameter<Filler<double>*> LayerConfig<double>::filler("filler");
+
+template <> Parameter<float> LayerConfig<float>::dropout_ratio("dropout_ratio");
+template <> Parameter<double> LayerConfig<double>::dropout_ratio("dropout_ratio");

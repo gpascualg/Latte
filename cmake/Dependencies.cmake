@@ -14,6 +14,7 @@ else()
     find_package(gflags)
 endif()
 
+
 # ---[ OpenBLAS
 SET(OpenBLAS_LOCAL_DIR ${PROJECT_SOURCE_DIR}/dep/OpenBLAS)
 if(EXISTS "${OpenBLAS_LOCAL_DIR}" AND IS_DIRECTORY "${OpenBLAS_LOCAL_DIR}" AND NOT USE_GLOBAL_BLAS)
@@ -34,3 +35,7 @@ if(MSVC)
 else()
     set(OpenBLAS_LIBNAME openblas_static CACHE INTERNAL "OpenBLAS Library name")
 endif()
+
+
+# ---[ pcg32
+include_directories(dep/pcg32)

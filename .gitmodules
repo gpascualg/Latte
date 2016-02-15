@@ -7,3 +7,6 @@
 [submodule "dep/openmp"]
 	path = dep/openmp
 	url = http://llvm.org/git/openmp
+[submodule "dep/pcg32"]
+	path = dep/pcg32
+	url = https://github.com/wjakob/pcg32

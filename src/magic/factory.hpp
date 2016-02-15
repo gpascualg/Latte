@@ -2,7 +2,7 @@
 
 #include <unordered_map>
 #include <string>
-
+#include "latte_compiler_detection.h"
 
 template <class BaseType>
 class Factory
@@ -38,7 +38,7 @@ private:
 template <class BaseType>
 std::unordered_map<std::string, BaseType*> Factory<BaseType>::_instances;
 
-#if defined(HAS_TEMPLATE_TEMPLATE)
+#if Latte_COMPILER_CXX_TEMPLATE_TEMPLATE_PARAMETERS
     #define REGISTER_FACTORY_(BaseType, DataType) \
         template <template <typename> class SubType, typename... Params> \
         struct get ## BaseType ## _t<DataType, SubType, Params...> { \
@@ -60,7 +60,7 @@ std::unordered_map<std::string, BaseType*> Factory<BaseType>::_instances;
             return get ## BaseType ## _t<DType, SubType>::_(params...); \
         }
     
-    #define FromFactory(BaseType, SubType, DType) get ## BaseType<DType, SubType>()
+    #define FromFactory(BaseType, SubType, DType) get ## BaseType<DType, SubType>
     
 #else
     #define REGISTER_FACTORY_(BaseType, DataType) \

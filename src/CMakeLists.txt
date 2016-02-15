@@ -28,7 +28,22 @@ set(Latte_SOURCES
     # Fillers
     fillers/filler.hpp
     fillers/random_filler.hpp fillers/random_filler.cpp
+    
+    # Utils
+    utils/rng.hpp
 )
+
+include(WriteCompilerDetectionHeader)
+
+write_compiler_detection_header(
+    FILE ${CMAKE_CURRENT_BINARY_DIR}/latte_compiler_detection.h
+    PREFIX Latte
+    COMPILERS GNU Clang MSVC
+    FEATURES
+        cxx_template_template_parameters
+)
+
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 add_executable(Latte ${Latte_SOURCES})
 target_link_libraries(Latte gflags-static ${OpenBLAS_LIBNAME})

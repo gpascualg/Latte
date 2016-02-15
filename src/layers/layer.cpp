@@ -3,13 +3,17 @@
 #include "fillers/filler.hpp"
 #include "matrix/matrix.hpp"
 #include "matrix/matrix_factory.hpp"
+#include "utils/rng.hpp"
 
 
 template <typename DType>
-Layer<DType>::Layer(Shape shape, int num_output, Activation<DType>* activation, Filler<DType>* filler) :
+Layer<DType>::Layer(Shape shape, int num_output, Activation<DType>* activation, 
+    Filler<DType>* filler, DType dropout_ratio) :
 	_activaton(activation),
 	_in_shape(shape),
-	_out_shape({ shape.m, num_output })
+	_out_shape({ shape.m, num_output }),
+    _dropout_ratio(dropout_ratio),
+    _has_dropout(dropout_ratio > DType(0.0))
 {
 	// Never use MatrixFactory here, they mustn't be recycled
 	_weights = new Matrix<DType>(shape.n, num_output);
@@ -23,6 +27,7 @@ Layer<DType>::Layer(Shape shape, int num_output, Activation<DType>* activation, 
 	std::cout << "Indata shape: (" << shape.m << ", " << shape.n << ")" << std::endl;
 	std::cout << "Weight shape: (" << _weights->shape().m << ", " << _weights->shape().n << ")" << std::endl;
 	std::cout << "Output shape: (" << _output->shape().m << ", " << _output->shape().n << ")" << std::endl;
+    std::cout << "Has Dropout: (" << std::boolalpha << _has_dropout << " (" << _dropout_ratio << ")" << std::endl;
 	std::cout << "--------" << std::endl << std::endl;
 }
 
@@ -39,6 +44,16 @@ Matrix<DType>* Layer<DType>::forward()
 {
 	_in->mul(_weights, _output);
 	_activaton->apply(_output);
+    
+    if (_has_dropout)
+    {
+        for (int i = 0; i < _output->shape().prod(); ++i)
+        {
+            (*_output)[i] *= (rng()->nextFloat() >= _dropout_ratio ? DType(1.0) : DType(0.0)) *
+                (DType(1.0) / (1 - _dropout_ratio));
+        }
+    }
+    
 	return _output;
 }
 
@@ -79,8 +94,10 @@ typename Layer<DType>::LayerIterator Layer<DType>::iterate()
 
 
 // Specializations
-template Layer<float>::Layer(Shape shape, int num_output, Activation<float>* activation, Filler<float>* filler);
-template Layer<double>::Layer(Shape shape, int num_output, Activation<double>* activation, Filler<double>* filler);
+template Layer<float>::Layer(Shape shape, int num_output, Activation<float>* activation, 
+    Filler<float>* filler, float dropout_ratio);
+template Layer<double>::Layer(Shape shape, int num_output, Activation<double>* activation, 
+    Filler<double>* filler, double dropout_ratio);
 
 template Matrix<float>* Layer<float>::forward();
 template Matrix<double>* Layer<double>::forward();

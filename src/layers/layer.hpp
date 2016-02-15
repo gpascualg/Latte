@@ -47,7 +47,7 @@ public:
 	};
 
 public:
-	Layer(Shape shape, int num_output, Activation<DType>* activaton, Filler<DType>* filler);
+	Layer(Shape shape, int num_output, Activation<DType>* activaton, Filler<DType>* filler, DType dropout_ratio);
 	virtual ~Layer();
 
 	virtual Matrix<DType>* forward();
@@ -77,5 +77,7 @@ protected:
 
 	Shape _in_shape;
 	Shape _out_shape;
+    DType _dropout_ratio;
+    bool _has_dropout;
 };
 
