@@ -14,3 +14,7 @@ template <> Parameter<Filler<double>*> LayerConfig<double>::filler("filler");
 
 template <> Parameter<float> LayerConfig<float>::dropout_ratio("dropout_ratio");
 template <> Parameter<double> LayerConfig<double>::dropout_ratio("dropout_ratio");
+
+template <> Parameter<BiasConfig<float>> LayerConfig<float>::bias("bias");
+template <> Parameter<BiasConfig<double>> LayerConfig<double>::bias("bias");
+    

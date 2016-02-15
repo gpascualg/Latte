@@ -27,10 +27,24 @@ int main(int argc, char** argv)
 	y(0, 0) = 0; y(1, 0) = 1; y(2, 0) = 1; y(3, 0) = 0;
 	
 	SGD<DT> sgd{ NamedArguments, SGDConfig<DT>::data = &x, SGDConfig<DT>::target = &y, SGDConfig<DT>::learning_rate = 1 };
-	sgd.stack<SigmoidLayer<DT>>(50);
-	sgd.stack<SigmoidLayer<DT>>(50);
-	sgd.stack<SigmoidLayer<DT>>(50);
-	sgd.stack<SigmoidLayer<DT>>(1);
+	//sgd.stack<SigmoidLayer<DT>>(50);
+	//sgd.stack<SigmoidLayer<DT>>(50);
+	//sgd.stack<SigmoidLayer<DT>>(50);
+	//sgd.stack<SigmoidLayer<DT>>(1);
+    
+    auto sigmoid_L1 = new SigmoidLayer<DT>{ NamedArguments, LayerConfig<DT>::shape = x.shape(), 
+        LayerConfig<DT>::num_output = 70 };
+    auto sigmoid_L2 = new SigmoidLayer<DT>{ NamedArguments, LayerConfig<DT>::shape = sigmoid_L1->outShape(), 
+        LayerConfig<DT>::num_output = 50 };
+    auto sigmoid_L3 = new SigmoidLayer<DT>{ NamedArguments, LayerConfig<DT>::shape = sigmoid_L2->outShape(), 
+        LayerConfig<DT>::num_output = 50 };
+    auto sigmoid_L4 = new SigmoidLayer<DT>{ NamedArguments, LayerConfig<DT>::shape = sigmoid_L3->outShape(), 
+        LayerConfig<DT>::num_output = 1, LayerConfig<DT>::bias = BiasConfig<DT>{false, 0.0, nullptr} };
+            
+    sgd.stack(sigmoid_L1);
+    sgd.stack(sigmoid_L2);
+    sgd.stack(sigmoid_L3);
+    sgd.stack(sigmoid_L4);
 	
 	for (int k = 0; k < 600000; ++k)
 	{

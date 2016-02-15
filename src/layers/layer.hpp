@@ -47,7 +47,8 @@ public:
 	};
 
 public:
-	Layer(Shape shape, int num_output, Activation<DType>* activaton, Filler<DType>* filler, DType dropout_ratio);
+	Layer(Shape shape, int num_output, Activation<DType>* activaton, Filler<DType>* filler, 
+        DType dropout_ratio, BiasConfig<DType> bias);
 	virtual ~Layer();
 
 	virtual Matrix<DType>* forward();
@@ -71,6 +72,8 @@ protected:
 
 	Matrix<DType>* _in;
 	Matrix<DType>* _weights;
+    Matrix<DType>* _bias_weights;
+    Matrix<DType>* _bias_values;
 	Matrix<DType>* _output;
 	Matrix<DType>* _delta;
 	Matrix<DType>* _diff;
@@ -79,5 +82,6 @@ protected:
 	Shape _out_shape;
     DType _dropout_ratio;
     bool _has_dropout;
+    BiasConfig<DType> _bias;
 };
 

@@ -7,12 +7,6 @@
 #include "common.hpp"
 
 template <typename DType>
-class Activation;
-
-template <typename DType>
-class Filler;
-
-template <typename DType>
 struct LayerConfig
 {
 	static Parameter<Shape> shape;
@@ -20,6 +14,7 @@ struct LayerConfig
 	static Parameter<Activation<DType>*> activation;
 	static Parameter<Filler<DType>*> filler;
     static Parameter<DType> dropout_ratio;
+    static Parameter<BiasConfig<DType>> bias;
 };
 
 #if !Latte_COMPILER_IS_MSVC
@@ -37,4 +32,7 @@ struct LayerConfig
     
     template <> Parameter<float> LayerConfig<float>::dropout_ratio;
     template <> Parameter<double> LayerConfig<double>::dropout_ratio;
+    
+    template <> Parameter<BiasConfig<float>> LayerConfig<float>::bias;
+    template <> Parameter<BiasConfig<double>> LayerConfig<double>::bias;
 #endif

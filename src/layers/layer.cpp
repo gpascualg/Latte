@@ -8,12 +8,15 @@
 
 template <typename DType>
 Layer<DType>::Layer(Shape shape, int num_output, Activation<DType>* activation, 
-    Filler<DType>* filler, DType dropout_ratio) :
+    Filler<DType>* filler, DType dropout_ratio, BiasConfig<DType> bias) :
 	_activaton(activation),
+    _bias_weights(nullptr),
+    _bias_values(nullptr),
 	_in_shape(shape),
 	_out_shape({ shape.m, num_output }),
     _dropout_ratio(dropout_ratio),
-    _has_dropout(dropout_ratio > DType(0.0))
+    _has_dropout(dropout_ratio > DType(0.0)),
+    _bias(bias)
 {
 	// Never use MatrixFactory here, they mustn't be recycled
 	_weights = new Matrix<DType>(shape.n, num_output);
@@ -22,6 +25,13 @@ Layer<DType>::Layer(Shape shape, int num_output, Activation<DType>* activation,
 
 	// Fill initial weights
 	filler->fill(_weights);
+    
+    // Enable bias
+    if (_bias.use_bias)
+    {
+        _bias_weights = new Matrix<DType>(shape.m, 1);
+        _bias_values = new Matrix<DType>(1, num_output, _bias.value);
+    }
 
 	std::cout << "Setting up:" << std::endl;
 	std::cout << "Indata shape: (" << shape.m << ", " << shape.n << ")" << std::endl;
@@ -54,6 +64,12 @@ Matrix<DType>* Layer<DType>::forward()
         }
     }
     
+    // If using biases, sum them to our output
+    if (_bias.use_bias)
+    {
+        _bias_values->mul(_bias_weights, _output, DType(1.0), DType(1.0));
+    }
+    
 	return _output;
 }
 
@@ -68,7 +84,18 @@ Matrix<DType>* Layer<DType>::backward(Matrix<DType>* error)
 template <typename DType>
 void Layer<DType>::update(DType learning_rate)
 {
-	// _weights = learning_rate * _in.T * _delta + 1.0 * _weights
+    // Update biases
+    // _bias_weights = 1.0 * _delta * _bias_values.T + 1.0 * _bias_weights
+    if (_bias.use_bias)
+    {
+        //std::cout << std::hex << this << ": " << _delta->shape().m << " " << _delta->shape().n << " * ";
+        //std::cout << _bias_values->T()->shape().m << " " << _bias_values->T()->shape().n << " = ";
+        //std::cout << _bias_weights->shape().m << " " << _bias_weights->shape().n << std::endl;
+        
+        _delta->mul(_bias_values->T(), _bias_weights, DType(1.0), DType(1.0));
+    }
+    
+	// _weights = -learning_rate * _in.T * _delta + 1.0 * _weights
 	_in->T()->mul(_delta, _weights, -learning_rate, 1.0);
 }
 
@@ -95,9 +122,9 @@ typename Layer<DType>::LayerIterator Layer<DType>::iterate()
 
 // Specializations
 template Layer<float>::Layer(Shape shape, int num_output, Activation<float>* activation, 
-    Filler<float>* filler, float dropout_ratio);
+    Filler<float>* filler, float dropout_ratio, BiasConfig<float> bias);
 template Layer<double>::Layer(Shape shape, int num_output, Activation<double>* activation, 
-    Filler<double>* filler, double dropout_ratio);
+    Filler<double>* filler, double dropout_ratio, BiasConfig<double> bias);
 
 template Matrix<float>* Layer<float>::forward();
 template Matrix<double>* Layer<double>::forward();
