@@ -54,7 +54,7 @@ template <typename DType>
 void Layer<DType>::update(DType learning_rate)
 {
 	// _weights = learning_rate * _in.T * _delta + 1.0 * _weights
-	_in->T()->mul(_delta, _weights, learning_rate, 1.0);
+	_in->T()->mul(_delta, _weights, -learning_rate, 1.0);
 }
 
 template <typename DType>

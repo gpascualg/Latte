@@ -66,7 +66,7 @@ void SGD<DType>::backward()
 {
 	// Initial error
 	Matrix<DType>* predicted = _lastLayer->output();
-	Matrix<DType>* error = (*_target - *predicted);
+	Matrix<DType>* error = (*predicted  - *_target);
 
 	if ((_k % 10000) == 0)
 	{
