@@ -28,9 +28,9 @@ set(Latte_SOURCES
     # Fillers
     fillers/filler.hpp
     fillers/random_filler.hpp fillers/random_filler.cpp
-    
+
     # Utils
-    utils/rng.hpp
+    utils/rng.hpp utils/rng.cpp
 )
 
 include(WriteCompilerDetectionHeader)

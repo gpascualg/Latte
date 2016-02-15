@@ -17,6 +17,12 @@ struct LayerConfig
     static Parameter<BiasConfig<DType>> bias;
 };
 
+template <typename DType>
+inline BiasConfig<DType> NoBias()
+{
+	return BiasConfig<DType>{false, 0, nullptr};
+}
+
 #if !Latte_COMPILER_IS_MSVC
     template <> Parameter<Shape> LayerConfig<float>::shape;
     template <> Parameter<Shape> LayerConfig<double>::shape;

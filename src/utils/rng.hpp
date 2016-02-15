@@ -1,3 +1,5 @@
+#pragma once
+
 #include "pcg32.h"
 
 class Rng
@@ -20,8 +22,6 @@ private:
     pcg32 _rng;
     static Rng* _instance;    
 };
-
-Rng* Rng::_instance = nullptr;
 
 inline pcg32* rng()
 {

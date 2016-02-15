@@ -33,14 +33,14 @@ int main(int argc, char** argv)
 	//sgd.stack<SigmoidLayer<DT>>(1);
     
     auto sigmoid_L1 = new SigmoidLayer<DT>{ NamedArguments, LayerConfig<DT>::shape = x.shape(), 
-        LayerConfig<DT>::num_output = 70 };
+        LayerConfig<DT>::num_output = 50 };
     auto sigmoid_L2 = new SigmoidLayer<DT>{ NamedArguments, LayerConfig<DT>::shape = sigmoid_L1->outShape(), 
         LayerConfig<DT>::num_output = 50 };
     auto sigmoid_L3 = new SigmoidLayer<DT>{ NamedArguments, LayerConfig<DT>::shape = sigmoid_L2->outShape(), 
         LayerConfig<DT>::num_output = 50 };
     auto sigmoid_L4 = new SigmoidLayer<DT>{ NamedArguments, LayerConfig<DT>::shape = sigmoid_L3->outShape(), 
-        LayerConfig<DT>::num_output = 1, LayerConfig<DT>::bias = BiasConfig<DT>{false, 0.0, nullptr} };
-            
+		LayerConfig<DT>::num_output = 1, LayerConfig<DT>::bias = NoBias<DT>() };
+
     sgd.stack(sigmoid_L1);
     sgd.stack(sigmoid_L2);
     sgd.stack(sigmoid_L3);

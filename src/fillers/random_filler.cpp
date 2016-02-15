@@ -1,12 +1,13 @@
 #include "random_filler.hpp"
 #include "matrix/matrix.hpp"
+#include "utils/rng.hpp"
 
 template <typename DType>
 void RandomFiller<DType>::fill(Matrix<DType>* weights)
 {
 	for (int i = 0; i < weights->shape().prod(); ++i)
 	{
-		(*weights)[i] = DType(rand()) / RAND_MAX - DType(0.5);
+		(*weights)[i] = rng()->nextFloat() - DType(0.5);
 	}
 }
 

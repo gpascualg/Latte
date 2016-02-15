@@ -19,28 +19,11 @@ public:
 	GenericParameter(bool required = false, bool optional = false) :
 		_required(required),
 		_optional(optional)
-	{
-        std::cout << "GenericParameter opt=" << optional << " req=" << required << std::endl;
-    }
+	{}
 
 	template <typename T>
 	T as(bool clean = true)
-	{
-        if (!_required)
-        {
-            std::cout << "\tReached as " << ((Parameter<T>*)this)->Name << "  with opt=" << std::boolalpha << _optional << std::endl;
-        }
-        else
-        {
-            std::cout << "\tReached with opt=" << std::boolalpha << _optional << " & req=" << std::boolalpha << _required << std::endl;
-        }
-
-		if (_required && _optional)
-		{
-			std::cout << "ERR" << std::endl;
-		}
-        
-        std::cout << "\tAddr=" << std::hex << this << std::endl;
+	{        
 		assert(!_required && "Required default parameter not found");
 		T value = ((Parameter<T>*)this)->Value;
 
@@ -74,7 +57,6 @@ public:
 
 	Parameter<T>* operator=(T value)
 	{
-        std::cout << "Overloaded " << Name << "=" << std::endl;
 		return new Parameter<T>(Name, value);
 	}
 
@@ -101,27 +83,20 @@ template<std::size_t I = 0, typename D, typename... Tp>
 typename std::enable_if<I == sizeof_pack___<Tp...>::value, GenericParameter*>::type
     eval(std::string name, std::tuple<Tp...> tpl, const bool required, D def)
 {
-    std::cout << "Failed at looking for " << name << " was req=" << required << std::endl;
-    
-    if (required)
+	if (required)
     {
         return new GenericParameter(true);
     }
 
-    auto opt = Parameter<D>::make_optional(def);
-    std::cout << "Optional name: " << opt->Name << std::endl;
-    std::cout << "\tAddr=" << std::hex << opt << std::endl;
-    return (GenericParameter*)opt;
+    return Parameter<D>::make_optional(def);
 }
 
 template<std::size_t I = 0, typename D, typename... Tp>
 typename std::enable_if<I < sizeof_pack___<Tp...>::value, GenericParameter*>::type
     eval(std::string name, std::tuple<Tp...> tpl, const bool required, D def)
 {
-    std::cout << "I=" << I << " (" << name << ")" << std::endl;
     if (std::get<I>(tpl)->Name == name)
     {
-        std::cout << "Found " << name << std::endl;
         return (GenericParameter*)std::get<I>(tpl);
     }
     return eval<I + 1, D, Tp...>(name, tpl, required, def);
