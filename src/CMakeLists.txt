@@ -45,14 +45,14 @@ write_compiler_detection_header(
     FILE ${CMAKE_CURRENT_BINARY_DIR}/latte_compiler_detection.h
     PREFIX Latte
     COMPILERS GNU Clang MSVC
-    FEATURES
-        cxx_template_template_parameters
+    FEATURES cxx_template_template_parameters
 )
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 add_executable(Latte ${Latte_SOURCES})
-target_link_libraries(Latte gflags-static ${OpenBLAS_LIBNAME})
+add_dependencies(Latte EP_OpenBLAS)
+target_link_libraries(Latte gflags-static ${OpenBLAS_LIBRARY})
 
 set_property(TARGET Latte PROPERTY CXX_STANDARD 11)
 target_compile_features(Latte PRIVATE cxx_decltype cxx_nullptr cxx_variadic_templates)
