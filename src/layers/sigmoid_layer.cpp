@@ -1,5 +1,6 @@
-#include "sigmoid_layer.hpp"
-#include "matrix/matrix.hpp"
-#include "activations/sigmoid_activation.hpp"
-#include "fillers/random_filler.hpp"
+#include "layers/sigmoid_layer.hpp"
 
+namespace Layer
+{
+	SPECIALIZE(SigmoidLayer);
+}

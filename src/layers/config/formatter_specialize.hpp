@@ -1,3 +1,5 @@
+#pragma once
+
 #include "layers/config/formatter.hpp"
 #include "fillers/random_filler.hpp"
 #include "common.hpp"
@@ -14,14 +16,21 @@ class Filler;
 
 namespace Config
 {
-	class Finalizer {};
+	class Finalizer { public: Finalizer(){} };
 
+	// Layer specific config
 	TEMPLATED_FORMATTER(NumOutput, int);
 	TEMPLATED_FORMATTER(Dropout, float);
 	TEMPLATED_FORMATTER(Shape, ::Shape);
 	EXTENDED_FORMATTER(Bias, ::Bias);
 	EXTENDED_FORMATTER_PTR(Filler, ::Filler);
 	EXTENDED_FORMATTER_PTR(Activation, ::Activation);
+	EXTENDED_FORMATTER_PTR(Data, ::Matrix);
+
+	// Optimization config
+	TEMPLATED_FORMATTER(LearningRate, float);
+	TEMPLATED_FORMATTER(Momentum, float);
+	EXTENDED_FORMATTER_PTR(Target, ::Matrix);
 }
 
 namespace Float

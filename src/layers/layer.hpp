@@ -25,6 +25,24 @@ namespace Layer
 
 
 	template <typename DType>
+	struct LayerConnection
+	{
+		LayerConnection(Matrix<DType>* input):
+			input(input)
+		{}
+
+		Layer<DType>* layer;
+		Matrix<DType>* input;
+
+		Matrix<DType>* error;
+
+		Matrix<DType>** weights;
+		Matrix<DType>** bias_weights;
+		Matrix<DType>** output;
+		Matrix<DType>** delta;
+	};
+
+	template <typename DType>
 	class FinalizedLayer
 	{
 		template <typename T>
@@ -34,7 +52,30 @@ namespace Layer
 		FinalizedLayer(Layer<DType>* layer);
 
 	public:
+		FinalizedLayer(const FinalizedLayer<DType>& layer);
+
+	public:
 		inline Layer<DType>* operator->() { return _layer; }
+
+		inline FinalizedLayer<DType>& operator<<(Matrix<DType>& matrix)
+		{
+			*_layer << matrix;
+			return *this;
+		}
+
+		inline FinalizedLayer<DType>& operator<<(Layer<DType>& layer)
+		{
+			*_layer << layer;
+			return *this;
+		}
+
+		inline FinalizedLayer<DType>& operator<<(FinalizedLayer<DType>& layer)
+		{
+			*_layer << *layer._layer;
+			return *this;
+		}
+
+		inline Layer<DType>* asd() { return _layer; }
 
 	private:
 		Layer<DType>* _layer;
@@ -87,54 +128,42 @@ namespace Layer
 			return *this;
 		}
 
-		Layer<DType>& operator<<(Layer<DType>& other)
+		Layer<DType>& operator<<(Matrix<DType>& other);
+		Layer<DType>& operator<<(Layer<DType>& other);
+		inline Layer<DType>& operator<<(FinalizedLayer<DType>& other)
 		{
-			LATTE_ASSERT("Layer can not have that much inputs: " <<
-				_inputs.size() << " >= " << _maxInputs, _inputs.size() >= _maxInputs);
+			return (*this << *other._layer);
+		}
 
-			if (_inputs.size() > 0)
-			{
-				// Size restrictions
-				for (Layer<DType>* l : _inputs)
-				{
-					LATTE_ASSERT("All inputs must have the same size",
-						l->outShape().m == outShape().m && l->outShape().n == outShape().n)
-				}
-			}
-			else
-			{
-				// Set size
-				*this << Config::Shape(other.outShape());
-			}
-
-			other._inputees.push_back(this);
-			_inputs.push_back(&ohter);
+		Layer<DType>& operator<<(Config::Data<DType>&& data)
+		{
+			_isFirst = true;
+			return (*this << *data());
 		}
 
 		FinalizedLayer<DType> operator<<(Config::Finalizer&& f)
 		{
 			LATTE_ASSERT("Layer not ready, all should be 1:" <<
 				std::endl << "\tNumOutput: " << _numOutput.isSet() <<
-				std::endl << "\tShape: " << _inShape.isSet() << 
 				std::endl << "\tFiller: " << _filler.isSet() << 
 				std::endl << "\tActivation: " << _activation.isSet(),
-				_numOutput.isSet() && _inShape.isSet() && _filler.isSet() && _activation.isSet());
+				_numOutput.isSet() && _filler.isSet() && _activation.isSet());
 
 			return FinalizedLayer<DType>(this);
 		}
 
 	public:
+		bool canBeForwarded();
+		bool isLast();
+
 		virtual Matrix<DType>* forward();
-		virtual Matrix<DType>* backward(Matrix<DType>* error);
-		virtual void update(DType learning_rate);
+		virtual std::vector<Matrix<DType>*> backward(std::vector<Matrix<DType>*> errors);
+		virtual void update(float learningRate);
 
-		void connect(FinalizedLayer<DType>& layer);
-		void connect(Matrix<DType>* data);
-
-		inline Matrix<DType>* W() { return _weights; }
 		inline Shape inShape() { return _inShape(); }
-		inline Shape outShape() { return _output->shape(); }
-		inline Matrix<DType>* output() { return _output; }
+		inline Shape outShape() { return _output[0]->shape(); }
+		inline std::vector<Matrix<DType>*>& output() { return _output; }
+		inline std::vector<Matrix<DType>*>& W() { return _weights; }
 
 	protected:
 		Config::NumOutput _numOutput;
@@ -144,7 +173,6 @@ namespace Layer
 		Config::Filler<DType> _filler;
 		Config::Activation<DType> _activation;
 
-		Matrix<DType>* _in;
     	Matrix<DType>* _bias_values;
 		//Matrix<DType>* _diff;
 
@@ -153,10 +181,11 @@ namespace Layer
 		std::vector<Matrix<DType>*> _output;
     	std::vector<Matrix<DType>*> _delta;
 
+    	bool _isFirst;
 		bool _forwardDone;
 		int _maxInputs;
-		std::vector<Layer<DType>*> _inputs;
-		std::vector<Layer<DType>*> _inputees;
+		int _forwardsTo;
+		std::vector<LayerConnection<DType>*> _inputs;
 	};
 
 
@@ -204,47 +233,3 @@ namespace Layer
 	REGISTER_LAYER_I(LayerName, Float, float) \
 	REGISTER_LAYER_I(LayerName, Double, double)
 
-
-/*
-template <typename DType>
-class Layer
-{
-public:
-	class LayerIterator
-	{
-		friend class Layer;
-
-	protected:
-		LayerIterator(Layer<DType>* layer);
-
-	public:
-		void operator++();
-		void operator--();
-		Layer<DType>* operator*();
-		bool next();
-		Layer<DType>* last();
-
-	private:
-		Layer<DType>* _current;
-		Layer<DType>* _previous;
-		std::queue<std::pair<Layer<DType>*, Layer<DType>*> > _queue;
-	};
-
-public:
-	Layer();
-	virtual ~Layer();
-
-	virtual Matrix<DType>* forward();
-	virtual Matrix<DType>* backward(Matrix<DType>* error);
-	virtual void update(DType learning_rate);
-
-	inline Matrix<DType>* W() { return _weights; }
-	inline Shape inShape() { return _in_shape; }
-	inline Shape outShape() { return _out_shape; }
-	inline Matrix<DType>* output() { return _output; }
-	
-	void connect(Layer<DType>* layer);
-	void connect(Matrix<DType>* data);
-	LayerIterator iterate();
-};
-*/

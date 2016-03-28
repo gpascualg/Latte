@@ -33,3 +33,7 @@ struct Shape
     } \
 } while(0)
 
+#define SPECIALIZE(What) \
+	template class What<float>; \
+	template class What<double>;
+

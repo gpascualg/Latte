@@ -12,17 +12,10 @@ set(Latte_SOURCES
     # Optimizations
     optimization/sgd.hpp optimization/sgd.cpp
 
-    # Optimizations Utils
-    optimization/utils/sgd_config.hpp optimization/utils/sgd_config.cpp
-
     # Layers
     layers/layer.hpp layers/layer.cpp
     layers/sigmoid_layer.hpp layers/sigmoid_layer.cpp
     layers/dense_layer.hpp layers/dense_layer.cpp
-
-    # Layers Utils
-    #layers/utils/layer_iterator.cpp
-    #layers/utils/layer_config.hpp layers/utils/layer_config.cpp
 
     # Layers formatting
     layers/config/formatter.hpp

@@ -2,7 +2,8 @@
 
 #include <vector>
 
-#include "utils/sgd_config.hpp"
+#include "layers/config/formatter_specialize.hpp"
+
 
 template <typename DType>
 class Matrix;
@@ -16,29 +17,48 @@ namespace Layer
 	class FinalizedLayer;
 }
 
-template <typename DType>
-class SGD
+namespace Optimizer
 {
-public:
-	//SGD(GenericParameter* data, GenericParameter* target, GenericParameter* learning_rate, GenericParameter* momentum);
-	/*template <typename... Args> SGD(NamedArguments_t, Args... args):
-		SGD{ ARG_REQUIRED(data), ARG_REQUIRED(target), ARG_OPTIONAL(learning_rate, DType(0.01)), ARG_OPTIONAL(momentum, DType(0.0)) }
-	{}*/
-	
-	template <typename LType>
-	void stack(int num_output);
-	void stack(Layer::FinalizedLayer<DType>* layer);
+	template <typename DType>
+	class SGD
+	{
+	public:
+		SGD(std::vector<Layer::FinalizedLayer<DType>> layers);
 
-	void forward();
-	void backward();
+		void forward();
+		void backward();
 
-private:
-	Matrix<DType>* _data;
-	Matrix<DType>* _target;
-	DType _learning_rate;
-	DType _momentum;
-    
-	Layer::FinalizedLayer<DType>* _firstLayer;
-	Layer::FinalizedLayer<DType>* _lastLayer;
-    int _k;
-};
+		SGD& operator<<(Config::Target<DType>&& target)
+		{
+			_target = target;
+			return *this;
+		}
+
+		SGD& operator<<(Config::LearningRate&& lr)
+		{
+			_learning_rate = lr;
+			return *this;
+		}
+
+	private:
+		Config::Target<DType> _target;
+		Config::LearningRate _learning_rate;
+		DType _momentum;
+
+	    std::vector<Layer::FinalizedLayer<DType>> _layers;
+	    std::vector<Layer::FinalizedLayer<DType>> _orderedLayers;
+	    std::vector<Layer::FinalizedLayer<DType>> _lastLayers;
+
+	    int _k;
+	};
+}
+
+namespace Float
+{
+	using SGD = Optimizer::SGD<float>;
+}
+
+namespace Double
+{
+	using SGD = Optimizer::SGD<double>;
+}
