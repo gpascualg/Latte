@@ -5,142 +5,129 @@
 #include "matrix/matrix_factory.hpp"
 #include "utils/rng.hpp"
 
-
-template <typename DType>
-Layer<DType>::Layer(Shape shape, int num_output, Activation<DType>* activation, 
-    Filler<DType>* filler, DType dropout_ratio, BiasConfig<DType> bias) :
-	_activaton(activation),
-    _bias_weights(nullptr),
-    _bias_values(nullptr),
-	_in_shape(shape),
-	_out_shape({ shape.m, num_output }),
-    _dropout_ratio(dropout_ratio),
-    _has_dropout(dropout_ratio > DType(0.0)),
-    _bias(bias)
+namespace Layer
 {
-	// Never use MatrixFactory here, they mustn't be recycled
-	_weights = new Matrix<DType>(shape.n, num_output);
-	_output = new Matrix<DType>(shape.m, num_output);
-	_diff = new Matrix<DType>(shape.n, num_output);
+	template <typename DType>
+	Layer<DType>::Layer()
+	{}
 
-	// Fill initial weights
-	filler->fill(_weights);
-    
-    // Enable bias
-    if (_bias.use_bias)
-    {
-		_bias_weights = new Matrix<DType>(1, num_output);
-        _bias_values = new Matrix<DType>(shape.m, 1, _bias.value);
-
-		_bias.filler->fill(_bias_weights);
-    }
-
-	std::cout << "Setting up:" << std::endl;
-	std::cout << "Indata shape: (" << shape.m << ", " << shape.n << ")" << std::endl;
-	std::cout << "Weight shape: (" << _weights->shape().m << ", " << _weights->shape().n << ")" << std::endl;
-	std::cout << "Output shape: (" << _output->shape().m << ", " << _output->shape().n << ")" << std::endl;
-    std::cout << "Has Dropout: (" << std::boolalpha << _has_dropout << " (" << _dropout_ratio << ")" << std::endl;
-	std::cout << "--------" << std::endl << std::endl;
-}
-
-template <typename DType>
-Layer<DType>::~Layer()
-{
-	delete _weights;
-	delete _output;
-	delete _diff;
-}
-
-template <typename DType>
-Matrix<DType>* Layer<DType>::forward()
-{
-	// Compute weights product
-	_in->mul(_weights, _output);
-    
-    // If using biases, sum them to our output
-    if (_bias.use_bias)
-    {
-		_bias_values->mul(_bias_weights, _output, DType(1.0), DType(1.0));
-    }
-
-	// Apply activation function
-	_activaton->apply(_output);
-
-	// Drop neurons
-	if (_has_dropout)
+	template <typename DType>
+	FinalizedLayer<DType>::FinalizedLayer(Layer<DType>* layer) :
+		_layer(layer)
 	{
-		for (int i = 0; i < _output->shape().prod(); ++i)
-		{
-			(*_output)[i] *= (rng()->nextFloat() >= _dropout_ratio ? (DType(1.0) / (1 - _dropout_ratio)) : DType(0.0));
-		}
+		// Never use MatrixFactory here, they mustn't be recycled
+		layer->_weights = new Matrix<DType>(layer->_inShape->n, layer->_numOutput());
+		layer->_output = new Matrix<DType>(layer->_inShape->m, layer->_numOutput());
+		layer->_diff = new Matrix<DType>(layer->_inShape->n, layer->_numOutput());
+
+		// Fill initial weights
+		layer->_filler->fill(layer->_weights);
+	    
+	    // Enable bias
+	    if (layer->_bias.isSet())
+	    {
+			layer->_bias_weights = new Matrix<DType>(1, layer->_numOutput());
+	        layer->_bias_values = new Matrix<DType>(layer->_inShape->m, 1, layer->_bias->value);
+
+			layer->_bias->filler->fill(layer->_bias_weights);
+	    }
+	
+		std::cout << "Setting up:" << std::endl;
+		std::cout << "Indata shape: (" << layer->_inShape->m << ", " << layer->_inShape->n << ")" << std::endl;
+		std::cout << "Weight shape: (" << layer->_weights->shape().m << ", " << layer->_weights->shape().n << ")" << std::endl;
+		std::cout << "Output shape: (" << layer->_output->shape().m << ", " << layer->_output->shape().n << ")" << std::endl;
+	    std::cout << "Has Dropout: (" << std::boolalpha << layer->_dropout.isSet() << " (" << layer->_dropout() << ")" << std::endl;
+
+	    if (layer->_bias.isSet())
+	    {
+	    	std::cout << "Bias Weight shape: (" << layer->_bias_weights->shape().m << ", " << layer->_bias_weights->shape().n << ")" << std::endl;
+			std::cout << "Bias Values shape: (" << layer->_bias_values->shape().m << ", " << layer->_bias_values->shape().n << ")" << std::endl;
+	    }
+
+		std::cout << "--------" << std::endl << std::endl;
 	}
 
-	return _output;
+	template <typename DType>
+	Layer<DType>::~Layer()
+	{
+		delete _weights;
+		delete _output;
+		delete _diff;
+	}
+
+	template <typename DType>
+	Matrix<DType>* Layer<DType>::forward()
+	{
+		// Compute weights product
+		_in->mul(_weights, _output);
+	    
+	    // If using biases, sum them to our output
+	    if (_bias.isSet())
+	    {
+			_bias_values->mul(_bias_weights, _output, DType(1.0), DType(1.0));
+	    }
+
+		// Apply activation function
+		_activation->apply(_output);
+
+		// Drop neurons
+		if (_dropout.isSet())
+		{
+			for (int i = 0; i < _output->shape().prod(); ++i)
+			{
+				(*_output)[i] *= (rng()->nextFloat() >= _dropout() ? (DType(1.0) / (1 - _dropout())) : DType(0.0));
+			}
+		}
+
+		return _output;
+	}
+
+	template <typename DType>
+	Matrix<DType>* Layer<DType>::backward(Matrix<DType>* error)
+	{
+		_delta = MatrixFactory<DType>::get()->pop(error->shape());
+		_activation->derivative(_output, _delta, error);
+		return _delta;
+	}
+
+	template <typename DType>
+	void Layer<DType>::update(DType learning_rate)
+	{
+	    // Update biases
+	    // _bias_weights = 1.0 * _delta * _bias_values.T + 1.0 * _bias_weights
+	    if (_bias.isSet())
+	    {
+			_bias_values->T()->mul(_delta, _bias_weights, DType(1.0), DType(1.0));
+	    }
+	    
+		// _weights = -learning_rate * _in.T * _delta + 1.0 * _weights
+		_in->T()->mul(_delta, _weights, -learning_rate, 1.0);
+	}
+
+	template <typename DType>
+	void Layer<DType>::connect(FinalizedLayer<DType>& layer)
+	{ 
+	    /*layer->_next.push_back(this);
+	    _previous.push_back(layer);*/
+	    _in = layer->_output;
+	}
+
+	template <typename DType>
+	void Layer<DType>::connect(Matrix<DType>* data)
+	{ 
+	    _in = data; 
+	}
+
+	/*
+	template <typename DType>
+	typename Layer<DType>::LayerIterator Layer<DType>::iterate()
+	{ 
+	    return LayerIterator(this); 
+	}
+	*/
+	template class Layer<float>;
+	template class Layer<double>;
+
+	template class FinalizedLayer<float>;
+	template class FinalizedLayer<double>;
 }
-
-template <typename DType>
-Matrix<DType>* Layer<DType>::backward(Matrix<DType>* error)
-{
-	_delta = MatrixFactory<DType>::get()->pop(error->shape());
-	_activaton->derivative(_output, _delta, error);
-	return _delta;
-}
-
-template <typename DType>
-void Layer<DType>::update(DType learning_rate)
-{
-    // Update biases
-    // _bias_weights = 1.0 * _delta * _bias_values.T + 1.0 * _bias_weights
-    if (_bias.use_bias)
-    {        
-		_bias_values->T()->mul(_delta, _bias_weights, DType(1.0), DType(1.0));
-    }
-    
-	// _weights = -learning_rate * _in.T * _delta + 1.0 * _weights
-	_in->T()->mul(_delta, _weights, -learning_rate, 1.0);
-}
-
-template <typename DType>
-void Layer<DType>::connect(Layer<DType>* layer)
-{ 
-    layer->_next.push_back(this);
-    _previous.push_back(layer);
-    _in = layer->_output;
-}
-
-template <typename DType>
-void Layer<DType>::connect(Matrix<DType>* data)
-{ 
-    _in = data; 
-}
-
-template <typename DType>
-typename Layer<DType>::LayerIterator Layer<DType>::iterate()
-{ 
-    return LayerIterator(this); 
-}
-
-
-// Specializations
-template Layer<float>::Layer(Shape shape, int num_output, Activation<float>* activation, 
-    Filler<float>* filler, float dropout_ratio, BiasConfig<float> bias);
-template Layer<double>::Layer(Shape shape, int num_output, Activation<double>* activation, 
-    Filler<double>* filler, double dropout_ratio, BiasConfig<double> bias);
-
-template Matrix<float>* Layer<float>::forward();
-template Matrix<double>* Layer<double>::forward();
-
-template Matrix<float>* Layer<float>::backward(Matrix<float>* error);
-template Matrix<double>* Layer<double>::backward(Matrix<double>* error);
-
-template void Layer<float>::update(float learning_rate);
-template void Layer<double>::update(double learning_rate);
-
-template void Layer<float>::connect(Layer<float>* layer);
-template void Layer<double>::connect(Layer<double>* layer);
-
-template void Layer<float>::connect(Matrix<float>* data);
-template void Layer<double>::connect(Matrix<double>* data);
-
-template Layer<float>::LayerIterator Layer<float>::iterate();
-template Layer<double>::LayerIterator Layer<double>::iterate();

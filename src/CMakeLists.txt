@@ -3,7 +3,6 @@ set(Latte_SOURCES
     common.hpp
 
     # Magic
-    magic/named_parameters.hpp
     magic/factory.hpp
 
     # Matrix
@@ -22,8 +21,12 @@ set(Latte_SOURCES
     layers/dense_layer.hpp layers/dense_layer.cpp
 
     # Layers Utils
-    layers/utils/layer_iterator.cpp
-    layers/utils/layer_config.hpp layers/utils/layer_config.cpp
+    #layers/utils/layer_iterator.cpp
+    #layers/utils/layer_config.hpp layers/utils/layer_config.cpp
+
+    # Layers formatting
+    layers/config/formatter.hpp
+    layers/config/formatter_specialize.hpp
 
     # Activations
     activations/activation.hpp
