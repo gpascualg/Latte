@@ -87,6 +87,30 @@ namespace Layer
 			return *this;
 		}
 
+		Layer<DType>& operator<<(Layer<DType>& other)
+		{
+			LATTE_ASSERT("Layer can not have that much inputs: " <<
+				_inputs.size() << " >= " << _maxInputs, _inputs.size() >= _maxInputs);
+
+			if (_inputs.size() > 0)
+			{
+				// Size restrictions
+				for (Layer<DType>* l : _inputs)
+				{
+					LATTE_ASSERT("All inputs must have the same size",
+						l->outShape().m == outShape().m && l->outShape().n == outShape().n)
+				}
+			}
+			else
+			{
+				// Set size
+				*this << Config::Shape(other.outShape());
+			}
+
+			other._inputees.push_back(this);
+			_inputs.push_back(&ohter);
+		}
+
 		FinalizedLayer<DType> operator<<(Config::Finalizer&& f)
 		{
 			LATTE_ASSERT("Layer not ready, all should be 1:" <<
@@ -121,12 +145,18 @@ namespace Layer
 		Config::Activation<DType> _activation;
 
 		Matrix<DType>* _in;
-		Matrix<DType>* _weights;
-    	Matrix<DType>* _bias_weights;
     	Matrix<DType>* _bias_values;
-		Matrix<DType>* _output;
-		Matrix<DType>* _delta;
-		Matrix<DType>* _diff;
+		//Matrix<DType>* _diff;
+
+		std::vector<Matrix<DType>*> _weights;
+    	std::vector<Matrix<DType>*> _bias_weights;
+		std::vector<Matrix<DType>*> _output;
+    	std::vector<Matrix<DType>*> _delta;
+
+		bool _forwardDone;
+		int _maxInputs;
+		std::vector<Layer<DType>*> _inputs;
+		std::vector<Layer<DType>*> _inputees;
 	};
 
 
@@ -138,22 +168,42 @@ namespace Layer
 			_layer(layer)
 		{}
 
-		template <typename T>
-		LayerWrapper<DType>& operator<<(T val)
+		~LayerWrapper()
 		{
-			return (*_layer << std::move(val));
+			if (_layer)
+			{
+				delete _layer;
+			}
+		}
+
+		template <typename T>
+		LayerWrapper<DType>& operator<<(T &&val)
+		{
+			*_layer << std::move(val);
+			return *this;
 		}
 
 		FinalizedLayer<DType> operator<<(Config::Finalizer&& fin)
 		{
+			auto layer = _layer;
 			_layer = nullptr;
-			return (*_layer << fin);
+			return (*layer << std::move(fin));
 		}
 
 	private:
 		Layer<DType>* _layer;
 	};
 }
+
+#define REGISTER_LAYER_I(LayerName, NType, DType) \
+	namespace NType { \
+		inline ::Layer::LayerWrapper<DType> LayerName() { return ::Layer::LayerWrapper<DType>(new ::Layer::LayerName<DType>()); } \
+	}
+
+#define REGISTER_LAYER(LayerName) \
+	REGISTER_LAYER_I(LayerName, Float, float) \
+	REGISTER_LAYER_I(LayerName, Double, double)
+
 
 /*
 template <typename DType>

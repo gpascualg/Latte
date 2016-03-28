@@ -8,12 +8,6 @@
 #include "activations/relu_activation.hpp"
 
 
-template <typename DType>
-class Activation;
-
-template <typename DType>
-class Filler;
-
 namespace Layer
 {
 	template <typename DType>
@@ -30,12 +24,4 @@ namespace Layer
 }
 
 
-namespace Float
-{
-	inline ::Layer::LayerWrapper<float> DenseLayer() { return ::Layer::LayerWrapper<float>(new ::Layer::DenseLayer<float>()); }
-}
-
-namespace Double
-{
-	inline ::Layer::LayerWrapper<double> DenseLayer() { return ::Layer::LayerWrapper<double>(new ::Layer::DenseLayer<double>()); }
-}
+REGISTER_LAYER(DenseLayer)
