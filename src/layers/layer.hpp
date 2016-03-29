@@ -1,87 +1,215 @@
 #pragma once
 
+#include <type_traits>
+#include <iostream>
+#include <string>
 #include <utility>
 #include <vector>
 #include <queue>
 
 // This should be forward declared and methods declared on a cpp
 #include "common.hpp"
+#include "layers/connection.hpp"
+#include "layers/config/formatter_specialize.hpp"
 
 template <typename DType>
 class Matrix;
 
-struct Shape;
 
-template <typename DType>
-class Activation;
-
-template <typename DType>
-class Filler;
-
-template <typename DType>
-class Layer;
-
-
-template <typename DType>
-class Layer
+namespace Layer
 {
-public:
-	class LayerIterator
+	template <typename T>
+	class Layer;
+
+	template <typename T>
+	class FinalizedLayer;
+
+
+	template <typename DType>
+	class FinalizedLayer
 	{
+		template <typename T>
 		friend class Layer;
 
 	protected:
-		LayerIterator(Layer<DType>* layer);
+		FinalizedLayer(Layer<DType>* layer);
 
 	public:
-		void operator++();
-		void operator--();
-		Layer<DType>* operator*();
-		bool next();
-		Layer<DType>* last();
+		FinalizedLayer(const FinalizedLayer<DType>& layer);
+
+	public:
+		inline Layer<DType>* operator->() { return _layer; }
+
+		inline FinalizedLayer<DType>& operator<<(Matrix<DType>& matrix)
+		{
+			*_layer << matrix;
+			return *this;
+		}
+
+		inline FinalizedLayer<DType>& operator<<(Layer<DType>& layer)
+		{
+			*_layer << layer;
+			return *this;
+		}
+
+		inline FinalizedLayer<DType>& operator<<(FinalizedLayer<DType>& layer)
+		{
+			*_layer << *layer._layer;
+			return *this;
+		}
+
+		inline Layer<DType>* asd() { return _layer; }
 
 	private:
-		Layer<DType>* _current;
-		Layer<DType>* _previous;
-		std::queue<std::pair<Layer<DType>*, Layer<DType>*> > _queue;
+		Layer<DType>* _layer;
 	};
 
-public:
-	Layer(Shape shape, int num_output, Activation<DType>* activaton, Filler<DType>* filler, 
-        DType dropout_ratio, BiasConfig<DType> bias);
-	virtual ~Layer();
 
-	virtual Matrix<DType>* forward();
-	virtual Matrix<DType>* backward(Matrix<DType>* error);
-	virtual void update(DType learning_rate);
+	template <typename DType>
+	class Layer
+	{
+		template <typename T>
+		friend class FinalizedLayer;
 
-	inline Matrix<DType>* W() { return _weights; }
-	inline Shape inShape() { return _in_shape; }
-	inline Shape outShape() { return _out_shape; }
-	inline Matrix<DType>* output() { return _output; }
-	
-	void connect(Layer<DType>* layer);
-	void connect(Matrix<DType>* data);
-	LayerIterator iterate();
+	public:
+		Layer();
+		virtual ~Layer();
 
-protected:
-	Activation<DType>* _activaton;
+		Layer<DType>& operator<<(ExtConfig::Shape&& shape)
+		{
+			_inShape = shape;
+			return *this;
+		}
 
-	std::vector<Layer<DType>*> _next;
-	std::vector<Layer<DType>*> _previous;
+		Layer<DType>& operator<<(ExtConfig::Bias<DType>&& bias)
+		{
+			_bias = bias;
+			return *this;
+		}
 
-	Matrix<DType>* _in;
-	Matrix<DType>* _weights;
-    Matrix<DType>* _bias_weights;
-    Matrix<DType>* _bias_values;
-	Matrix<DType>* _output;
-	Matrix<DType>* _delta;
-	Matrix<DType>* _diff;
+		Layer<DType>& operator<<(ExtConfig::NumOutput&& numOutput)
+		{
+			_numOutput = numOutput;
+			return *this;
+		}
+		
+		Layer<DType>& operator<<(ExtConfig::Dropout&& dropout)
+		{
+			_dropout = dropout;
+			return *this;
+		}
+		
+		Layer<DType>& operator<<(ExtConfig::Filler<DType>&& filler)
+		{
+			_filler = filler;
+			return *this;
+		}
+		
+		Layer<DType>& operator<<(ExtConfig::Activation<DType>&& activation)
+		{
+			_activation = activation;
+			return *this;
+		}
 
-	Shape _in_shape;
-	Shape _out_shape;
-    DType _dropout_ratio;
-    bool _has_dropout;
-    BiasConfig<DType> _bias;
-};
+		Layer<DType>& operator<<(Matrix<DType>& other);
+		Layer<DType>& operator<<(Layer<DType>& other);
+		inline Layer<DType>& operator<<(FinalizedLayer<DType>& other)
+		{
+			return (*this << *other._layer);
+		}
+
+		Layer<DType>& operator<<(ExtConfig::Data<DType>&& data)
+		{
+			_isFirst = true;
+			return (*this << *data());
+		}
+
+		FinalizedLayer<DType> operator<<(ExtConfig::Finalizer&& f)
+		{
+			LATTE_ASSERT("Layer not ready, all should be 1:" <<
+				std::endl << "\tNumOutput: " << _numOutput.isSet() <<
+				std::endl << "\tFiller: " << _filler.isSet() << 
+				std::endl << "\tActivation: " << _activation.isSet(),
+				_numOutput.isSet() && _filler.isSet() && _activation.isSet());
+
+			return FinalizedLayer<DType>(this);
+		}
+
+	public:
+		bool canBeForwarded();
+		bool isLast();
+
+		virtual Matrix<DType>* forward();
+		virtual std::vector<BackwardConnection<DType>*> backward();
+		virtual void update(float learningRate);
+
+		inline Shape inShape() { return _inShape(); }
+		inline Shape outShape() { return _output[0]->shape(); }
+		inline std::vector<Matrix<DType>*>& output() { return _output; }
+		inline std::vector<LayerConnection<DType>*>& connections() { return _connections; }
+
+	protected:
+		ExtConfig::NumOutput _numOutput;
+		ExtConfig::Dropout _dropout;
+		ExtConfig::Shape _inShape;
+		ExtConfig::Bias<DType> _bias;
+		ExtConfig::Filler<DType> _filler;
+		ExtConfig::Activation<DType> _activation;
+
+    	Matrix<DType>* _bias_values;
+		//Matrix<DType>* _diff;
+
+		std::vector<Matrix<DType>*> _output;
+
+    	bool _isFirst;
+		bool _forwardDone;
+		int _maxInputs;
+		int _forwardsTo;
+		std::vector<LayerConnection<DType>*> _connections;
+	};
+
+
+	template <typename DType>
+	class LayerWrapper
+	{
+	public:
+		LayerWrapper(Layer<DType>* layer):
+			_layer(layer)
+		{}
+
+		~LayerWrapper()
+		{
+			if (_layer)
+			{
+				delete _layer;
+			}
+		}
+
+		template <typename T>
+		LayerWrapper<DType>& operator<<(T &&val)
+		{
+			*_layer << std::move(val);
+			return *this;
+		}
+
+		FinalizedLayer<DType> operator<<(ExtConfig::Finalizer&& fin)
+		{
+			auto layer = _layer;
+			_layer = nullptr;
+			return (*layer << std::move(fin));
+		}
+
+	private:
+		Layer<DType>* _layer;
+	};
+}
+
+#define REGISTER_LAYER_I(LayerName, NType, DType) \
+	namespace NType { \
+		inline ::Layer::LayerWrapper<DType> LayerName() { return ::Layer::LayerWrapper<DType>(new ::Layer::LayerName<DType>()); } \
+	}
+
+#define REGISTER_LAYER(LayerName) \
+	REGISTER_LAYER_I(LayerName, Float, float) \
+	REGISTER_LAYER_I(LayerName, Double, double)
 

@@ -1,38 +1,83 @@
 #pragma once
 
 #include <vector>
+#include <iostream>
 
-#include "utils/sgd_config.hpp"
+#include "layers/config/formatter_specialize.hpp"
+#include "matrix/matrix.hpp"
 
-template <typename DType>
-class Matrix;
 
-template <typename DType>
-class Layer;
-
-template <typename DType>
-class SGD
+namespace Layer
 {
-public:
-	SGD(GenericParameter* data, GenericParameter* target, GenericParameter* learning_rate, GenericParameter* momentum);
-	template <typename... Args> SGD(NamedArguments_t, Args... args):
-		SGD{ ARG_REQUIRED(data), ARG_REQUIRED(target), ARG_OPTIONAL(learning_rate, DType(0.01)), ARG_OPTIONAL(momentum, DType(0.0)) }
-	{}
-	
-	template <typename LType>
-	void stack(int num_output);
-	void stack(Layer<DType>* layer);
+	template <typename DType>
+	class Layer;
 
-	void forward();
-	void backward();
+	template <typename DType>
+	class FinalizedLayer;
+}
 
-private:
-	Matrix<DType>* _data;
-	Matrix<DType>* _target;
-	DType _learning_rate;
-	DType _momentum;
-    
-	Layer<DType>* _firstLayer;
-	Layer<DType>* _lastLayer;
-    int _k;
-};
+
+template<class T, class = decltype(std::declval<T>()() )> 
+std::true_type  is_callable_test(const T&);
+std::false_type is_callable_test(...);
+
+template<class T> using is_callable = decltype(is_callable_test(std::declval<T>()));
+
+template <class T> struct is_nullptr { enum { value = false }; };
+template <> struct is_nullptr<nullptr_t> { enum { value = true }; };
+
+namespace Optimizer
+{
+	template <typename DType>
+	class SGD
+	{
+	public:
+		SGD(std::vector<Layer::FinalizedLayer<DType>> layers);
+
+		void optimize();
+
+		SGD& operator<<(ExtConfig::Target<DType>&& target)
+		{
+			_target = target;
+			return *this;
+		}
+
+		SGD& operator<<(ExtConfig::Iterations&& iters)
+		{
+			_iterations = iters;
+			return *this;
+		}
+
+		SGD& operator<<(ExtConfig::LearningRate&& lr)
+		{
+			_learning_rate = lr;
+			return *this;
+		}
+
+	private:
+		void forward();
+		void backward();
+
+	private:
+		ExtConfig::Target<DType> _target;
+		ExtConfig::Iterations _iterations;
+		ExtConfig::LearningRate _learning_rate;
+		DType _momentum;
+
+	    std::vector<Layer::FinalizedLayer<DType>> _layers;
+	    std::vector<Layer::FinalizedLayer<DType>> _orderedLayers;
+	    std::vector<Layer::FinalizedLayer<DType>> _lastLayers;
+
+	    int _k;
+	};
+}
+
+namespace Float
+{
+	using SGD = Optimizer::SGD<float>;
+}
+
+namespace Double
+{
+	using SGD = Optimizer::SGD<double>;
+}

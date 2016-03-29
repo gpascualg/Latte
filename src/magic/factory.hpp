@@ -1,88 +1,84 @@
 #pragma once
 
-#include <unordered_map>
+#include <vector>
 #include <string>
 #include "latte_compiler_detection.h"
 
-template <class BaseType>
-class Factory
+
+class AutoCleanable
 {
 public:
-    class Register
-    {
-    public:
-        template <class SubType, typename... Params>
-        static BaseType* get(Params... params)
-        {
-            auto it = _instances.find(SubType::FactoryName());
-            BaseType* instance = nullptr;
-            
-            if (it == _instances.end())
-            {
-                instance = new SubType(params...);
-                _instances.insert(std::make_pair(SubType::FactoryName(), instance));
-            }
-            else
-            {
-                instance = it->second;
-            }
-            
-            return instance;
-        }
-    };
-    
+    virtual ~AutoCleanable() { clean(); }
+
+protected:
+    virtual void clean() {};
+
+protected:
+    static std::vector<AutoCleanable*> _singletons;
+
 private:
-    static std::unordered_map<std::string, BaseType*> _instances;
+    static AutoCleanable _instance;
 };
 
-template <class BaseType>
-std::unordered_map<std::string, BaseType*> Factory<BaseType>::_instances;
 
-#if Latte_COMPILER_CXX_TEMPLATE_TEMPLATE_PARAMETERS
-    #define REGISTER_FACTORY_(BaseType, DataType) \
-        template <template <typename> class SubType, typename... Params> \
-        struct get ## BaseType ## _t<DataType, SubType, Params...> { \
-            static inline BaseType<DataType>* _(Params... params) \
-            { \
-                return Factory<BaseType<DataType>>::Register::get<SubType<DataType>>(); \
-            } \
-        };
 
-    #define REGISTER_FACTORY(BaseType) \
-        template <typename DType, template <typename> class SubType, typename... Params> \
-        struct get ## BaseType ## _t { \
-            static inline BaseType<DType>* _(Params... params); \
-        }; \
-        REGISTER_FACTORY_(BaseType, float) \
-        REGISTER_FACTORY_(BaseType, double); \
-        template <typename DType, template <typename> class SubType, typename... Params> \
-        BaseType<DType>* get ## BaseType(Params... params) { \
-            return get ## BaseType ## _t<DType, SubType>::_(params...); \
+template <class BaseType, class SubType, typename... Params>
+class Factory : public AutoCleanable
+{
+public:
+    static BaseType* get(Params... params)
+    {
+        if (_instance == nullptr)
+        {
+            _singletons.emplace_back(new Factory<BaseType, SubType, Params...>(params...));
         }
-    
-    #define FromFactory(BaseType, SubType, DType) get ## BaseType<DType, SubType>
-    
-#else
-    #define REGISTER_FACTORY_(BaseType, DataType) \
-        template <class SubType, typename... Params> \
-        struct get ## BaseType ## _t<DataType, SubType, Params...> { \
-            static inline BaseType<DataType>* _(Params... params) \
-            { \
-                return Factory<BaseType<DataType>>::Register::get<SubType>(); \
-            } \
-        };
+        
+        return _instance;
+    }
 
-    #define REGISTER_FACTORY(BaseType) \
-        template <typename DType, class SubType, typename... Params> \
-        struct get ## BaseType ## _t { \
-            static inline BaseType<DType>* _(Params... params); \
-        }; \
-        REGISTER_FACTORY_(BaseType, float) \
-        REGISTER_FACTORY_(BaseType, double); \
-        template <typename DType, class SubType, typename... Params> \
-        BaseType<DType>* get ## BaseType(Params... params) { \
-            return get ## BaseType ## _t<DType, SubType>::_(params...); \
-        }
+protected:
+    void clean() override
+    {
+        delete _instance;
+    }
+
+private:
+    Factory(Params... params)
+    {
+        _instance = new SubType(params...);
+    }
     
-    #define FromFactory(BaseType, SubType, DType) get ## BaseType<DType, SubType<DType>>
-#endif
+private:
+    static BaseType* _instance;
+};
+
+template <class BaseType, class SubType, typename... Params>
+BaseType* Factory<BaseType, SubType, Params...>::_instance = nullptr;
+
+
+#define REGISTER_FACTORY_NS(BaseType, NType, DType) \
+    namespace NType \
+    { \
+        template <template <typename T> class SubType, typename... Args> \
+        inline BaseType<DType>* Get ## BaseType(Args... args) \
+        { \
+            return From ## BaseType ## Factory<DType, SubType, Args...>(args...); \
+        } \
+    }
+
+
+#define REGISTER_FACTORY(BaseType) \
+    template <typename DType, template <typename DType> class T, typename... Args> \
+    inline BaseType<DType>* From ## BaseType ## Factory(Args... args) \
+    { \
+        return FromFactory<BaseType<DType>, T<DType>, Args...>(args...); \
+    } \
+    REGISTER_FACTORY_NS(BaseType, Float, float) \
+    REGISTER_FACTORY_NS(BaseType, Double, double)
+
+
+template <class BaseType, class SubType, typename... Params>
+inline BaseType* FromFactory(Params... params)
+{
+    return Factory<BaseType, SubType, Params...>::get(params...);
+}

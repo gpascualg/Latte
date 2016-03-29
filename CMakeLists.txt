@@ -9,6 +9,7 @@ list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/Modules)
 # include(ExternalProject)
 
 # ---[ Options
+option(DEBUG "Debug Latte" OFF)
 set(python_version "2" CACHE STRING "Specify which python version to use")
 
 # ---[ Dependencies

@@ -7,11 +7,21 @@ template <typename DType>
 class Filler;
 
 template <typename DType>
-struct BiasConfig
+struct Bias
 {
-    bool use_bias;
     DType value;
     Filler<DType>* filler;
+};
+
+struct Iterations
+{
+	Iterations() : Iterations(0, 0) {}
+	Iterations(int max, int every):
+		maxIterations(max), printEvery(every)
+	{}
+
+	int maxIterations;
+	int printEvery;
 };
 
 struct Shape
@@ -24,3 +34,16 @@ struct Shape
 	inline int prod() { return m*n; }
 	inline Shape T() { return{ n, m }; }
 };
+
+#include <iostream>
+#define LATTE_ASSERT(message, ...) do { \
+    if(!(__VA_ARGS__)) { \
+        std::cout << message << std::endl; \
+        std::terminate(); \
+    } \
+} while(0)
+
+#define SPECIALIZE(What) \
+	template class What<float>; \
+	template class What<double>;
+
