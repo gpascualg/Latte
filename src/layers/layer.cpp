@@ -235,13 +235,6 @@ namespace Layer
 		_forwardDone = false;
 	}
 
-	/*
-	template <typename DType>
-	typename Layer<DType>::LayerIterator Layer<DType>::iterate()
-	{ 
-	    return LayerIterator(this); 
-	}
-	*/
 	template class Layer<float>;
 	template class Layer<double>;
 

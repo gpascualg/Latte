@@ -120,6 +120,11 @@ namespace Optimizer
 				Matrix<DType>* delta = MatrixFactory<DType>::get()->pop({ connection->delta->shape().m, connection->weights->shape().m });
 				connection->delta->mul(connection->weights->T(), delta);
 				connection->error = delta;
+
+				// TODO: Use a pool (or wait for BackwardConnection precomputing)
+				// BackwardConnection precomputing will make all objects of this type
+				// persistent, thus no need to create/delete them anymore (while running)
+				delete connection;
 			}
 
 			// Compute backward connection
