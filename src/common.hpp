@@ -13,6 +13,16 @@ struct Bias
     Filler<DType>* filler;
 };
 
+struct Iterations
+{
+	Iterations() : Iterations(0, 0) {}
+	Iterations(int max, int every):
+		maxIterations(max), printEvery(every)
+	{}
+
+	int maxIterations;
+	int printEvery;
+};
 
 struct Shape
 {

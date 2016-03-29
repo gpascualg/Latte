@@ -51,15 +51,9 @@ namespace Layer
 	template <typename DType>
 	Layer<DType>::~Layer()
 	{
-		for (auto* connection : _inputs)
+		for (auto* connection : _connections)
 		{
-			delete connection->weights;
-			delete connection->output;
-
-			if (_bias.isSet())
-			{
-				delete connection->bias_weights;
-			}
+			delete connection;
 			//delete _diff;
 		}
 	}
@@ -68,12 +62,13 @@ namespace Layer
 	Layer<DType>& Layer<DType>::operator<<(Matrix<DType>& other)
 	{
 		LATTE_ASSERT("Layer can not have that much inputs: " <<
-			_inputs.size() << " >= " << _maxInputs, _inputs.size() < (std::size_t)_maxInputs);
+			_connections.size() << " >= " << _maxInputs, 
+			_connections.size() < (std::size_t)_maxInputs);
 
-		if (_inputs.size() > 0)
+		if (_connections.size() > 0)
 		{
 			// Size restrictions
-			for (auto* conn : _inputs)
+			for (auto* conn : _connections)
 			{
 				LATTE_ASSERT("All inputs must have the same size",
 					conn->input->shape().m == outShape().m && 
@@ -83,11 +78,11 @@ namespace Layer
 		else
 		{
 			// Set size
-			*this << Config::Shape(other.shape());
+			*this << ExtConfig::Shape(other.shape());
 		}
 
 		LayerConnection<DType>* connection = new LayerConnection<DType>(&other);
-		_inputs.emplace_back(connection);
+		_connections.emplace_back(connection);
 
 		// Set other layer output
 		if (_output.size() == 0)
@@ -100,31 +95,19 @@ namespace Layer
 		connection->input = &other;
 	
 		// Never use MatrixFactory here, they mustn't be recycled
-		auto weights = new Matrix<DType>(_inShape->n, _numOutput());
-	
-		connection->weights = new Matrix<DType>*;
-		connection->output = new Matrix<DType>*;
-		connection->delta = new Matrix<DType>*;
-
-		*connection->weights = weights;
+		connection->weights = new Matrix<DType>(_inShape->n, _numOutput());
 		*connection->output = _output[0];
 
-		_weights.emplace_back(weights);
 		//layer->_diff = new Matrix<DType>(layer->_inShape->n, layer->_numOutput());
 
 		// Fill initial weights
-		_filler->fill(weights);
+		_filler->fill(connection->weights);
 
 		// Set bias
 	    if (_bias.isSet())
 	    {
-			auto bias_weights = new Matrix<DType>(1, _numOutput());
-
-			connection->bias_weights = new Matrix<DType>*;
-			*connection->bias_weights = bias_weights;
-
-			_bias_weights.emplace_back(bias_weights);
-			_bias->filler->fill(bias_weights);
+			connection->bias_weights = new Matrix<DType>(1, _numOutput());
+			_bias->filler->fill(connection->bias_weights);
 		}
 
 		return *this;
@@ -136,7 +119,7 @@ namespace Layer
 		// Connect matrix
 		*this << *other._output[0];
 
-		auto* connection = _inputs.back();
+		auto* connection = _connections.back();
 		connection->layer = &other;
 
 		++other._forwardsTo;
@@ -153,9 +136,9 @@ namespace Layer
 		}
 
 		bool result = true;
-		for (std::size_t i = 0; i < _inputs.size() && result; ++i)
+		for (std::size_t i = 0; i < _connections.size() && result; ++i)
 		{
-			result &= _inputs[i]->layer->_forwardDone;
+			result &= _connections[i]->layer->_forwardDone;
 		}
 
 		return result;
@@ -170,15 +153,15 @@ namespace Layer
 	template <typename DType>
 	Matrix<DType>* Layer<DType>::forward()
 	{
-		for (auto* connection : _inputs)
+		for (auto* connection : _connections)
 		{
 			// Compute weights product
-			connection->input->mul(*connection->weights, *connection->output);
+			connection->input->mul(connection->weights, *connection->output);
 		    
 		    // If using biases, sum them to our output
 		    if (_bias.isSet())
 		    {
-				_bias_values->mul(*connection->bias_weights, *connection->output, DType(1.0), DType(1.0));
+				_bias_values->mul(connection->bias_weights, *connection->output, DType(1.0), DType(1.0));
 		    }
 
 			// Apply activation function
@@ -202,41 +185,50 @@ namespace Layer
 	}
 
 	template <typename DType>
-	std::vector<Matrix<DType>*> Layer<DType>::backward(std::vector<Matrix<DType>*> errors)
+	std::vector<BackwardConnection<DType>*> Layer<DType>::backward()
 	{
-		std::vector<Matrix<DType>*> deltas;
+		std::vector<BackwardConnection<DType>*> backwardConnections;
 
-		for (auto output : _output)
+		for (auto* connection : _connections)
 		{
-			for (auto* error : errors)
+			Matrix<DType>* delta = MatrixFactory<DType>::get()->pop(connection->error->shape());
+			_activation->derivative(*connection->output, delta, connection->error);
+
+			// Save delta
+			connection->delta = delta;
+
+			// TODO: Precompute this
+			// Find connections from connection->layer whose output is this input
+			if (connection->layer)
 			{
-				Matrix<DType>* delta = MatrixFactory<DType>::get()->pop(error->shape());
-				_activation->derivative(output, delta, error);
-
-				// FIXME: Won't work for multiple deltas
-				*_inputs[0]->delta = delta;
-
-				deltas.emplace_back(delta);
+				for (auto* foreigner : connection->layer->connections())
+				{
+					if (*foreigner->output == connection->input)
+					{
+						backwardConnections.emplace_back(new BackwardConnection<DType>(
+							foreigner->error, delta, connection->weights));
+					}
+				}
 			}
 		}
 
-		return deltas;
+		return backwardConnections;
 	}
 
 	template <typename DType>
 	void Layer<DType>::update(float learningRate)
 	{
-		for (auto* connection : _inputs)
+		for (auto* connection : _connections)
 		{
 		    // Update biases
 		    // _bias_weights = 1.0 * _delta * _bias_values.T + 1.0 * _bias_weights
 		    if (_bias.isSet())
 		    {
-				_bias_values->T()->mul(*connection->delta, *connection->bias_weights, DType(1.0), DType(1.0));
+				_bias_values->T()->mul(connection->delta, connection->bias_weights, DType(1.0), DType(1.0));
 		    }
 		    
 			// _weights = -learning_rate * _in.T * _delta + 1.0 * _weights
-			connection->input->T()->mul(*connection->delta, *connection->weights, -DType(learningRate), 1.0);
+			connection->input->T()->mul(connection->delta, connection->weights, -DType(learningRate), 1.0);
 		}
 
 		// Flag as not done (unless its first)

@@ -1,3 +1,8 @@
+if (${DEBUG})
+    message("Debugging Latte, might have performance impact")
+    set(CMAKE_BUILD_TYPE Debug CACHE STRING "")
+endif()
+
 set(Latte_SOURCES
     main.cpp
     common.hpp
@@ -14,6 +19,7 @@ set(Latte_SOURCES
 
     # Layers
     layers/layer.hpp layers/layer.cpp
+    layers/connection.hpp layers/connection.cpp
     layers/sigmoid_layer.hpp layers/sigmoid_layer.cpp
     layers/dense_layer.hpp layers/dense_layer.cpp
 

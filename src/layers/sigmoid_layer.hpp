@@ -17,8 +17,8 @@ namespace Layer
 	    SigmoidLayer() :
 	        Layer<DType>()
 	    {
-	        *this << Config::Filler<DType> { FromFactory(Filler, RandomFiller, DType)() };
-	        *this << Config::Activation<DType> { FromFactory(Activation, SigmoidActivation, DType)() };
+	        *this << ExtConfig::Filler<DType> { FromFactory(Filler, RandomFiller, DType)() };
+	        *this << ExtConfig::Activation<DType> { FromFactory(Activation, SigmoidActivation, DType)() };
 	    }
 	};
 }

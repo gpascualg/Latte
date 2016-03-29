@@ -68,21 +68,47 @@ public:
 	}
 };
 
+#define NAMESPACED_FORMATTER(Name, NType, DType) \
+	namespace NType { namespace Config { \
+		inline ::ExtConfig::Name Name(DType t) { return ::ExtConfig::Name(t); } \
+	} }
+
 #define TEMPLATED_FORMATTER(Name, DType) \
-	class Name : public Formatter<DType> { \
-	public: \
-		Name() : Formatter<DType>() {} \
-		Name(DType value) : Formatter<DType>(value) {} \
-	} //
+	namespace ExtConfig { \
+		class Name : public Formatter<DType> { \
+		public: \
+			Name() : Formatter<DType>() {} \
+			Name(DType value) : Formatter<DType>(value) {} \
+		}; \
+	} \
+	NAMESPACED_FORMATTER(Name, Float, DType) \
+	NAMESPACED_FORMATTER(Name, Double, DType) 
+
+
+#define NAMESPACED_FORMATTER_EXT(Name, NType, DType) \
+	namespace NType { namespace Config { \
+		template <typename... T> \
+		inline ::ExtConfig::Name<DType> Name(T... t) { return ::ExtConfig::Name<DType>(t...); } \
+	} }
+	
+
+#define TEMPLATED_FORMATTER_EXT(Name, ExtDType) \
+	namespace ExtConfig { \
+		template <typename DType> \
+		class Name : public Formatter<ExtDType> { \
+		public: \
+			Name() : Formatter<ExtDType>() {} \
+			Name(ExtDType value) : Formatter<ExtDType>(value) {} \
+		}; \
+	} \
+	NAMESPACED_FORMATTER_EXT(Name, Float, float) \
+	NAMESPACED_FORMATTER_EXT(Name, Double, double) 
 
 #define DEFAULT_FORMATTER(Name) \
-	template <typename DType> \
-	TEMPLATED_FORMATTER(Name, DType)
+	TEMPLATED_FORMATTER_EXT(Name, DType);
 
 #define EXTENDED_FORMATTER(Name, Ext) \
-	template <typename DType> \
-	TEMPLATED_FORMATTER(Name, Ext<DType>)
+	TEMPLATED_FORMATTER_EXT(Name, Ext<DType>);
 
 #define EXTENDED_FORMATTER_PTR(Name, Ext) \
-	template <typename DType> \
-	TEMPLATED_FORMATTER(Name, Ext<DType>*)
+	TEMPLATED_FORMATTER_EXT(Name, Ext<DType>*);

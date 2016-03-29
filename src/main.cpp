@@ -37,12 +37,12 @@ int main(int argc, char** argv)
 
 	auto d0 = DenseLayer() << 
 		Config::NumOutput(50) << 
-		Config::Data<float>(&x) << 
+		Config::Data(&x) << 
 		Config::Finalizer();
 
 	auto d1 = DenseLayer() << 
 		Config::NumOutput(50) << 
-		Config::Bias<float>(DefaultBias()) <<
+		Config::Bias(DefaultBias()) <<
 		/*Config::Dropout(0.1f) <<*/
 		Config::Finalizer();
 
@@ -54,16 +54,13 @@ int main(int argc, char** argv)
 	d2 << d1;
 
 	SGD sgd = SGD({d0, d1, d2}) <<
-		Config::Target<float>(&y) <<
-		Config::LearningRate(0.1f);
+		Config::Target(&y) <<
+		Config::LearningRate(1.0f) <<
+		Config::Iterations({1000000, 100000});
 
 	for (int i = 0; i < 100000; ++i)
 	{
-		sgd.forward();
-		sgd.backward();
-
-		// Update Matrix pool
-		MatrixFactory<float>::get()->update();
+		sgd.optimize();
 	}
 
 	// Free memory

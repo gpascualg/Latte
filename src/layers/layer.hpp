@@ -9,6 +9,7 @@
 
 // This should be forward declared and methods declared on a cpp
 #include "common.hpp"
+#include "layers/connection.hpp"
 #include "layers/config/formatter_specialize.hpp"
 
 template <typename DType>
@@ -23,24 +24,6 @@ namespace Layer
 	template <typename T>
 	class FinalizedLayer;
 
-
-	template <typename DType>
-	struct LayerConnection
-	{
-		LayerConnection(Matrix<DType>* input):
-			input(input)
-		{}
-
-		Layer<DType>* layer;
-		Matrix<DType>* input;
-
-		Matrix<DType>* error;
-
-		Matrix<DType>** weights;
-		Matrix<DType>** bias_weights;
-		Matrix<DType>** output;
-		Matrix<DType>** delta;
-	};
 
 	template <typename DType>
 	class FinalizedLayer
@@ -92,37 +75,37 @@ namespace Layer
 		Layer();
 		virtual ~Layer();
 
-		Layer<DType>& operator<<(Config::Shape&& shape)
+		Layer<DType>& operator<<(ExtConfig::Shape&& shape)
 		{
 			_inShape = shape;
 			return *this;
 		}
 
-		Layer<DType>& operator<<(Config::Bias<DType>&& bias)
+		Layer<DType>& operator<<(ExtConfig::Bias<DType>&& bias)
 		{
 			_bias = bias;
 			return *this;
 		}
 
-		Layer<DType>& operator<<(Config::NumOutput&& numOutput)
+		Layer<DType>& operator<<(ExtConfig::NumOutput&& numOutput)
 		{
 			_numOutput = numOutput;
 			return *this;
 		}
 		
-		Layer<DType>& operator<<(Config::Dropout&& dropout)
+		Layer<DType>& operator<<(ExtConfig::Dropout&& dropout)
 		{
 			_dropout = dropout;
 			return *this;
 		}
 		
-		Layer<DType>& operator<<(Config::Filler<DType>&& filler)
+		Layer<DType>& operator<<(ExtConfig::Filler<DType>&& filler)
 		{
 			_filler = filler;
 			return *this;
 		}
 		
-		Layer<DType>& operator<<(Config::Activation<DType>&& activation)
+		Layer<DType>& operator<<(ExtConfig::Activation<DType>&& activation)
 		{
 			_activation = activation;
 			return *this;
@@ -135,13 +118,13 @@ namespace Layer
 			return (*this << *other._layer);
 		}
 
-		Layer<DType>& operator<<(Config::Data<DType>&& data)
+		Layer<DType>& operator<<(ExtConfig::Data<DType>&& data)
 		{
 			_isFirst = true;
 			return (*this << *data());
 		}
 
-		FinalizedLayer<DType> operator<<(Config::Finalizer&& f)
+		FinalizedLayer<DType> operator<<(ExtConfig::Finalizer&& f)
 		{
 			LATTE_ASSERT("Layer not ready, all should be 1:" <<
 				std::endl << "\tNumOutput: " << _numOutput.isSet() <<
@@ -157,35 +140,32 @@ namespace Layer
 		bool isLast();
 
 		virtual Matrix<DType>* forward();
-		virtual std::vector<Matrix<DType>*> backward(std::vector<Matrix<DType>*> errors);
+		virtual std::vector<BackwardConnection<DType>*> backward();
 		virtual void update(float learningRate);
 
 		inline Shape inShape() { return _inShape(); }
 		inline Shape outShape() { return _output[0]->shape(); }
 		inline std::vector<Matrix<DType>*>& output() { return _output; }
-		inline std::vector<Matrix<DType>*>& W() { return _weights; }
+		inline std::vector<LayerConnection<DType>*>& connections() { return _connections; }
 
 	protected:
-		Config::NumOutput _numOutput;
-		Config::Dropout _dropout;
-		Config::Shape _inShape;
-		Config::Bias<DType> _bias;
-		Config::Filler<DType> _filler;
-		Config::Activation<DType> _activation;
+		ExtConfig::NumOutput _numOutput;
+		ExtConfig::Dropout _dropout;
+		ExtConfig::Shape _inShape;
+		ExtConfig::Bias<DType> _bias;
+		ExtConfig::Filler<DType> _filler;
+		ExtConfig::Activation<DType> _activation;
 
     	Matrix<DType>* _bias_values;
 		//Matrix<DType>* _diff;
 
-		std::vector<Matrix<DType>*> _weights;
-    	std::vector<Matrix<DType>*> _bias_weights;
 		std::vector<Matrix<DType>*> _output;
-    	std::vector<Matrix<DType>*> _delta;
 
     	bool _isFirst;
 		bool _forwardDone;
 		int _maxInputs;
 		int _forwardsTo;
-		std::vector<LayerConnection<DType>*> _inputs;
+		std::vector<LayerConnection<DType>*> _connections;
 	};
 
 
@@ -212,7 +192,7 @@ namespace Layer
 			return *this;
 		}
 
-		FinalizedLayer<DType> operator<<(Config::Finalizer&& fin)
+		FinalizedLayer<DType> operator<<(ExtConfig::Finalizer&& fin)
 		{
 			auto layer = _layer;
 			_layer = nullptr;

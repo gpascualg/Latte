@@ -14,24 +14,28 @@ template <typename DType>
 class Filler;
  
 
-namespace Config
+namespace ExtConfig
 {
 	class Finalizer { public: Finalizer(){} };
-
-	// Layer specific config
-	TEMPLATED_FORMATTER(NumOutput, int);
-	TEMPLATED_FORMATTER(Dropout, float);
-	TEMPLATED_FORMATTER(Shape, ::Shape);
-	EXTENDED_FORMATTER(Bias, ::Bias);
-	EXTENDED_FORMATTER_PTR(Filler, ::Filler);
-	EXTENDED_FORMATTER_PTR(Activation, ::Activation);
-	EXTENDED_FORMATTER_PTR(Data, ::Matrix);
-
-	// Optimization config
-	TEMPLATED_FORMATTER(LearningRate, float);
-	TEMPLATED_FORMATTER(Momentum, float);
-	EXTENDED_FORMATTER_PTR(Target, ::Matrix);
 }
+namespace Float { namespace Config { inline ::ExtConfig::Finalizer Finalizer() { return ::ExtConfig::Finalizer(); } } }
+namespace Double { namespace Config { inline ::ExtConfig::Finalizer Finalizer() { return ::ExtConfig::Finalizer(); } } }
+
+// Layer specific config
+TEMPLATED_FORMATTER(NumOutput, int);
+TEMPLATED_FORMATTER(Dropout, float);
+TEMPLATED_FORMATTER(Shape, ::Shape);
+EXTENDED_FORMATTER(Bias, ::Bias);
+EXTENDED_FORMATTER_PTR(Filler, ::Filler);
+EXTENDED_FORMATTER_PTR(Activation, ::Activation);
+EXTENDED_FORMATTER_PTR(Data, ::Matrix);
+
+// Optimization config
+TEMPLATED_FORMATTER(LearningRate, float);
+TEMPLATED_FORMATTER(Momentum, float);
+TEMPLATED_FORMATTER(Iterations, ::Iterations);
+EXTENDED_FORMATTER_PTR(Target, ::Matrix);
+
 
 namespace Float
 {
