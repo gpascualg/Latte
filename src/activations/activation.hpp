@@ -10,6 +10,8 @@ template <typename DType>
 class Activation
 {
 public:
+	virtual ~Activation() {}
+
 	inline void apply(Matrix<DType>* matrix)
 	{
 		apply(matrix, matrix);

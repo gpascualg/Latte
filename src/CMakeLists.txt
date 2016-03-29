@@ -8,7 +8,7 @@ set(Latte_SOURCES
     common.hpp
 
     # Magic
-    magic/factory.hpp
+    magic/factory.hpp magic/factory.cpp
 
     # Matrix
     matrix/matrix.hpp matrix/matrix.cpp

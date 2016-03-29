@@ -43,6 +43,7 @@ int main(int argc, char** argv)
 	auto d1 = DenseLayer() << 
 		Config::NumOutput(50) << 
 		Config::Bias(DefaultBias()) <<
+		Config::Filler(GetFiller<RandomFiller>()) << 
 		/*Config::Dropout(0.1f) <<*/
 		Config::Finalizer();
 
@@ -58,10 +59,7 @@ int main(int argc, char** argv)
 		Config::LearningRate(1.0f) <<
 		Config::Iterations({1000000, 100000});
 
-	for (int i = 0; i < 100000; ++i)
-	{
-		sgd.optimize();
-	}
+	sgd.optimize();
 
 	// Free memory
 	MatrixFactory<float>::get()->destroy();

@@ -46,7 +46,7 @@ namespace Float
 
 	inline Bias<float> DefaultBias()
 	{
-		return Bias<float> { 1.0f, FromFactory(Filler, RandomFiller, float)() };
+		return Bias<float> { 1.0f, GetFiller<RandomFiller>() };
 	}
 }
 
@@ -59,6 +59,6 @@ namespace Double
 
 	inline Bias<double> DefaultBias()
 	{
-		return Bias<double> { 1.0, FromFactory(Filler, RandomFiller, double)() };
+		return Bias<double> { 1.0, GetFiller<RandomFiller>() };
 	}
 }
