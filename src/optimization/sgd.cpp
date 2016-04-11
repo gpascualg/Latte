@@ -19,10 +19,9 @@ namespace Optimizer
 	void SGD<DType>::optimize()
 	{
 		LATTE_ASSERT("The following parameters must be set: " << std::endl <<
-			"\tTarget: " << std::boolalpha << _target.isSet() << std::endl <<
 			"\tLearningRate: " << std::boolalpha << _learning_rate.isSet() << std::endl <<
 			"\tIterations: " << std::boolalpha << _iterations.isSet(),
-			_target.isSet() && _learning_rate.isSet() && _iterations.isSet());
+			_learning_rate.isSet() && _iterations.isSet());
 
 		int maxIters = _iterations->maxIterations;
 		for (_k = 0; _k < maxIters; ++_k)
@@ -82,33 +81,24 @@ namespace Optimizer
 	template <typename DType>
 	void SGD<DType>::backward()
 	{
-		// FIXME: Multiple outputs
-		// Initial error
-		Matrix<DType>* predicted = _lastLayers[0]->output()[0];
-		Matrix<DType>* error = (*predicted  - *_target());
-
-		if ((_k % _iterations->printEvery) == 0)
-		{
-			DType sum = error->sum();
-			std::cout << "ERROR: " << (sum / error->shape().prod()) << std::endl;
-			std::cout << (*_target())(0, 0) << "\t" << (*_target())(1, 0) << "\t" << (*_target())(2, 0) << "\t" << (*_target())(3, 0) << std::endl;
-			std::cout << (*predicted)(0, 0) << "\t" << (*predicted)(1, 0) << "\t" << (*predicted)(2, 0) << "\t" << (*predicted)(3, 0) << std::endl << std::endl;
-		}
-
-		// Setup last layers errors
+		// Setup loss layers errors
 		std::vector<Layer::BackwardConnection<DType>*> previous;
 		auto lastLayer = _orderedLayers.rbegin();
 		for (; lastLayer != _orderedLayers.rend() && (*lastLayer)->isLast(); ++lastLayer)
 		{
-			// Setup error
-			for (auto connection : (*lastLayer)->connections())
+			Matrix<DType>* error = (*lastLayer)->output()[0];
+
+			if ((_k % _iterations->printEvery) == 0)
 			{
-				connection->error = error;
+				std::cout << "ERROR: " << (*error)[0] << std::endl;
+
+				// TODO: Per class output
+				//std::cout << (*_target())(0, 0) << "\t" << (*_target())(1, 0) << "\t" << (*_target())(2, 0) << "\t" << (*_target())(3, 0) << std::endl;
+				//std::cout << (*predicted)(0, 0) << "\t" << (*predicted)(1, 0) << "\t" << (*predicted)(2, 0) << "\t" << (*predicted)(3, 0) << std::endl << std::endl;
 			}
 
-			// Compute backward connection and append error
-			auto backConns = (*lastLayer)->backward();
-			previous.insert(previous.end(), backConns.begin(), backConns.end());
+			// Simply backward error
+			(*lastLayer)->backward();
 		}
 
 		// Backward the rest of layers

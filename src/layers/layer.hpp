@@ -31,6 +31,9 @@ namespace Layer
 		template <typename T>
 		friend class Layer;
 
+		template <typename T>
+		friend class Loss;
+
 	protected:
 		FinalizedLayer(Layer<DType>* layer);
 
@@ -111,8 +114,8 @@ namespace Layer
 			return *this;
 		}
 
-		Layer<DType>& operator<<(Matrix<DType>& other);
-		Layer<DType>& operator<<(Layer<DType>& other);
+		virtual Layer<DType>& operator<<(Layer<DType>& other);
+
 		inline Layer<DType>& operator<<(FinalizedLayer<DType>& other)
 		{
 			return (*this << *other._layer);
@@ -135,9 +138,12 @@ namespace Layer
 			return FinalizedLayer<DType>(this);
 		}
 
+	protected:
+		Layer<DType>& operator<<(Matrix<DType>& other);
+
 	public:
 		bool canBeForwarded();
-		bool isLast();
+		virtual bool isLast();
 
 		virtual Matrix<DType>* forward();
 		virtual std::vector<BackwardConnection<DType>*> backward();
@@ -169,11 +175,11 @@ namespace Layer
 	};
 
 
-	template <typename DType>
+	template <typename DType, template <typename DType> class BaseClass>
 	class LayerWrapper
 	{
 	public:
-		LayerWrapper(Layer<DType>* layer):
+		LayerWrapper(BaseClass<DType>* layer):
 			_layer(layer)
 		{}
 
@@ -186,7 +192,7 @@ namespace Layer
 		}
 
 		template <typename T>
-		LayerWrapper<DType>& operator<<(T &&val)
+		LayerWrapper<DType, BaseClass>& operator<<(T &&val)
 		{
 			*_layer << std::move(val);
 			return *this;
@@ -200,16 +206,19 @@ namespace Layer
 		}
 
 	private:
-		Layer<DType>* _layer;
+		BaseClass<DType>* _layer;
 	};
 }
 
-#define REGISTER_LAYER_I(LayerName, NType, DType) \
+#define REGISTER_LAYER_I(LayerName, NType, DType, BaseClass) \
 	namespace NType { \
-		inline ::Layer::LayerWrapper<DType> LayerName() { return ::Layer::LayerWrapper<DType>(new ::Layer::LayerName<DType>()); } \
+		inline ::Layer::LayerWrapper<DType, BaseClass> LayerName() { return ::Layer::LayerWrapper<DType, BaseClass>(new ::Layer::LayerName<DType>()); } \
 	}
 
 #define REGISTER_LAYER(LayerName) \
-	REGISTER_LAYER_I(LayerName, Float, float) \
-	REGISTER_LAYER_I(LayerName, Double, double)
+	REGISTER_LAYER_I(LayerName, Float, float, ::Layer::Layer) \
+	REGISTER_LAYER_I(LayerName, Double, double, ::Layer::Layer)
 
+#define REGISTER_LOSS(LayerName) \
+	REGISTER_LAYER_I(LayerName, Float, float, ::Layer::Loss) \
+	REGISTER_LAYER_I(LayerName, Double, double, ::Layer::Loss)

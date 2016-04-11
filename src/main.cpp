@@ -8,6 +8,7 @@
 #include "matrix/matrix_factory.hpp"
 #include "layers/sigmoid_layer.hpp"
 #include "layers/dense_layer.hpp"
+#include "layers/euclidean_loss.hpp"
 
 
 DEFINE_bool(testing, false, "Set to true to test");
@@ -44,18 +45,22 @@ int main(int argc, char** argv)
 		Config::NumOutput(50) << 
 		Config::Bias(DefaultBias()) <<
 		Config::Filler(GetFiller<RandomFiller>()) << 
-		/*Config::Dropout(0.1f) <<*/
+		Config::Dropout(0.1f) <<
 		Config::Finalizer();
 
 	auto d2 = SigmoidLayer() << 
 		Config::NumOutput(1) << 
 		Config::Finalizer();
 
+	auto l1 = EuclideanLoss() <<
+		Config::Target(&y) <<
+		Config::Finalizer();
+
 	d1 << d0;
 	d2 << d1;
+	l1 << d2;
 
-	SGD sgd = SGD({d0, d1, d2}) <<
-		Config::Target(&y) <<
+	SGD sgd = SGD({d0, d1, d2, l1}) <<
 		Config::LearningRate(1.0f) <<
 		Config::Iterations({1000000, 100000});
 

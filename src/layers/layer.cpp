@@ -1,4 +1,4 @@
-#include "layer.hpp"
+#include "layers/layer.hpp"
 #include "activations/activation.hpp"
 #include "fillers/filler.hpp"
 #include "matrix/matrix.hpp"
@@ -101,7 +101,10 @@ namespace Layer
 		//layer->_diff = new Matrix<DType>(layer->_inShape->n, layer->_numOutput());
 
 		// Fill initial weights
-		_filler->fill(connection->weights);
+		if (_filler.isSet())
+		{
+			_filler->fill(connection->weights);
+		}
 
 		// Set bias
 	    if (_bias.isSet())
@@ -172,7 +175,7 @@ namespace Layer
 			{
 				for (int i = 0; i < (*connection->output)->shape().prod(); ++i)
 				{
-					(*connection->output)[i] *= (rng()->nextFloat() >= _dropout() ? (DType(1.0) / (1 - _dropout())) : DType(0.0));
+					(**connection->output)[i] *= (rng()->nextFloat() >= _dropout() ? (DType(1.0) / (1 - _dropout())) : DType(0.0));
 				}
 			}
 		}

@@ -43,6 +43,8 @@ struct Shape
     } \
 } while(0)
 
+#define NOT_IMPLEMENTED(message) LATTE_ASSERT((message), false)
+
 #define SPECIALIZE(What) \
 	template class What<float>; \
 	template class What<double>;

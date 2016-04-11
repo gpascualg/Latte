@@ -27,6 +27,10 @@ set(Latte_SOURCES
     layers/sigmoid_layer.hpp layers/sigmoid_layer.cpp
     layers/dense_layer.hpp layers/dense_layer.cpp
 
+    # Loss layer
+    layers/loss.hpp layers/loss.cpp
+    layers/euclidean_loss.hpp layers/euclidean_loss.cpp
+
     # Layers formatting
     layers/config/formatter.hpp
     layers/config/formatter_specialize.hpp
