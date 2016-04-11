@@ -48,6 +48,6 @@ namespace Layer
 	BackwardConnection<DType>::~BackwardConnection()
 	{}
 
-	SPECIALIZE(LayerConnection);
-	SPECIALIZE(BackwardConnection);
+	SPECIALIZE_S(LayerConnection);
+	SPECIALIZE_S(BackwardConnection);
 }

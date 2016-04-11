@@ -37,7 +37,7 @@ if(NOT USE_GLOBAL_OPENBLAS)
         CMAKE_ARGS -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} -DCMAKE_INSTALL_PREFIX:PATH=${OPENBLAS_DIR} -DINCLUDE_INSTALL_DIR=.
     )
 
-    find_library(OpenBLAS_LIBRARY openblas PATHS ${DEP_BASE}/Build/EP_OpenBLAS/lib)
+    find_library(OpenBLAS_LIBRARY openblas libopenblas.dll PATHS ${DEP_BASE}/Build/EP_OpenBLAS/lib)
     include_directories(${DEP_BASE}/Source/EP_OpenBLAS)
 endif()
 

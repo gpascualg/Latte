@@ -47,3 +47,6 @@ struct Shape
 	template class What<float>; \
 	template class What<double>;
 
+#define SPECIALIZE_S(What) \
+	template struct What<float>; \
+	template struct What<double>;

@@ -24,16 +24,6 @@ template <> void Matrix<double>::operator-=(Matrix<double>& other)
 	cblas_daxpy(shape().prod(), -1.0, other._data, 1, _data, 1);
 }
 
-template <> void Matrix<float>::operator*=(float value)
-{
-	cblas_sscal(shape().prod(), value, _data, 1);
-}
-
-template <> void Matrix<double>::operator*=(double value)
-{
-	cblas_dscal(shape().prod(), value, _data, 1);
-}
-
 template <> void Matrix<float>::mul(Matrix<float>* other, Matrix<float>* result, float alpha, float beta)
 {
 	int lda = _transpose == CblasNoTrans ? _n : _m;
@@ -96,3 +86,5 @@ template <> void Matrix<double>::exp(Matrix<double>* other, double alpha)
 		other->_data[i] = std::exp(alpha*_data[i]);
 	}
 }
+
+SPECIALIZE(Matrix);

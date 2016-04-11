@@ -243,8 +243,15 @@ template <> void Matrix<double>::operator-=(Matrix<double>& other);
 
 
 // Mult operators
-template <> void Matrix<float>::operator*=(float value);
-template <> void Matrix<double>::operator*=(double value);
+template <> void Matrix<float>::operator*=(float value)
+{
+	cblas_sscal(shape().prod(), value, _data, 1);
+}
+
+template <> void Matrix<double>::operator*=(double value)
+{
+	cblas_dscal(shape().prod(), value, _data, 1);
+}
 
 template <typename DType>
 void Matrix<DType>::operator*=(Matrix<DType>& other)
@@ -452,8 +459,3 @@ void Matrix<DType>::pdiv(DType value, Matrix<DType>* result)
 	}
 }
 
-template <> void Matrix<float>::mul(Matrix<float>* other, Matrix<float>* result, float alpha, float beta);
-template <> void Matrix<double>::mul(Matrix<double>* other, Matrix<double>* result, double alpha, double beta);
-
-template <> float Matrix<float>::sum();
-template <> double Matrix<double>::sum();

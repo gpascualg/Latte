@@ -3,6 +3,10 @@ if (${DEBUG})
     set(CMAKE_BUILD_TYPE Debug CACHE STRING "")
 endif()
 
+if (${OpenBLAS_LIBRARY} MATCHES "-NOTFOUND$")
+	return()
+endif()
+
 set(Latte_SOURCES
     main.cpp
     common.hpp
