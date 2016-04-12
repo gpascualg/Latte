@@ -243,12 +243,14 @@ template <> void Matrix<double>::operator-=(Matrix<double>& other);
 
 
 // Mult operators
-template <> void Matrix<float>::operator*=(float value)
+template <>
+inline void Matrix<float>::operator*=(float value)
 {
 	cblas_sscal(shape().prod(), value, _data, 1);
 }
 
-template <> void Matrix<double>::operator*=(double value)
+template <>
+inline void Matrix<double>::operator*=(double value)
 {
 	cblas_dscal(shape().prod(), value, _data, 1);
 }

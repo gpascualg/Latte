@@ -6,7 +6,7 @@ namespace Layer
 	Loss<DType>::Loss():
 		Layer<DType>()
 	{
-		_numOutput = ExtConfig::NumOutput(1);
+		*this << ExtConfig::NumOutput(1);
 	}
 
 	SPECIALIZE(Loss);

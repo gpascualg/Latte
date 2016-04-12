@@ -34,8 +34,9 @@ namespace Layer
 		FinalizedLayer<DType> operator<<(ExtConfig::Finalizer&& f)
 		{
 			LATTE_ASSERT("Layer not ready, all should be 1:" <<
-				std::endl << "\tTarget: " << _target.isSet(),
-				_target.isSet());
+				std::endl << "\tTarget: " << _target.isSet() <<
+				std::endl << "\tNumOutput: " << this->_numOutput.isSet(),
+				_target.isSet() && this->_numOutput.isSet());
 
 			return FinalizedLayer<DType>(this);
 		}
@@ -43,7 +44,7 @@ namespace Layer
 		//virtual Layer<DType>& operator<<(Layer<DType>& other) override = 0;
 
 		// Disable some configs
-		FinalizedLayer<DType> operator<<(ExtConfig::NumOutput) { NOT_IMPLEMENTED("Loss layers can't have NumOutput"); }
+		//FinalizedLayer<DType> operator<<(ExtConfig::NumOutput) { NOT_IMPLEMENTED("Loss layers can't have NumOutput"); }
 		FinalizedLayer<DType> operator<<(ExtConfig::Filler<DType>) { NOT_IMPLEMENTED("Loss layers can't have Filler"); }
 		FinalizedLayer<DType> operator<<(ExtConfig::Activation<DType>) { NOT_IMPLEMENTED("Loss layers can't have Activation"); }
 

@@ -11,14 +11,14 @@ namespace Layer
 	template <typename DType>
 	Matrix<DType>* EuclideanLoss<DType>::forward()
 	{
-		Matrix<DType>* predicted = _connections[0]->input;
-		_loss = (*predicted - *_target());
+		Matrix<DType>* predicted = this->_connections[0]->input;
+		this->_loss = (*predicted - *this->_target());
 
-		Matrix<DType>* output = *_connections[0]->output;
-		(*output)[0] = _loss->sum() / (2 * _loss->shape().prod());
+		Matrix<DType>* output = *this->_connections[0]->output;
+		(*output)[0] = this->_loss->sum() / (2 * this->_loss->shape().prod());
 		
 		// Flag as done
-		_forwardDone = true;
+		this->_forwardDone = true;
 
 		// FIXME: Return?
 		return nullptr;
@@ -27,11 +27,11 @@ namespace Layer
 	template <typename DType>
 	std::vector<BackwardConnection<DType>*> EuclideanLoss<DType>::backward()
 	{
-		for (auto* foreigner : _connections[0]->layer->connections())
+		for (auto* foreigner : this->_connections[0]->layer->connections())
 		{
-			if (*foreigner->output == _connections[0]->input)
+			if (*foreigner->output == this->_connections[0]->input)
 			{
-				foreigner->error = _loss;
+				foreigner->error = this->_loss;
 			}
 		}
 
