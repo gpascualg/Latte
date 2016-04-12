@@ -1,6 +1,8 @@
 #pragma once
 
 #include "pcg32.h"
+#include <time.h>
+
 
 class Rng
 {
@@ -10,6 +12,7 @@ public:
         if (!_instance)
         {
             _instance = new Rng();
+	    _instance->_rng.seed(time(NULL));
         }
         
         return &_instance->_rng;
